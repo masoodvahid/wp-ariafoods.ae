@@ -19,7 +19,7 @@
 @media (min-width:1100px){:root{--head-h:76px}}
 
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--head-h) + 16px)}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--head-h) + 40px)}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 body{margin:0;background:var(--paper);color:var(--text);font:400 1rem/1.6 var(--f);text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
 @media (min-width:700px){body{font-size:1.0625rem}}
@@ -59,8 +59,15 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 .link-more:hover::after{transform:translateX(3px) rotate(45deg)}
 
 /* Header */
-.site-head{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
-.head-row{display:flex;align-items:center;gap:16px;height:var(--head-h)}
+/* Floating header: a rounded box with space around it; the first section runs underneath. */
+:root{--head-gap:8px}
+@media (min-width:700px){:root{--head-gap:14px}}
+.site-head{position:sticky;top:var(--wp-admin--admin-bar--height,0px);z-index:50;padding:var(--head-gap) var(--gutter) 0;margin-bottom:calc(-1 * (var(--head-h) + var(--head-gap)));pointer-events:none}
+.head-row{display:flex;align-items:center;gap:16px;height:var(--head-h);max-width:calc(var(--wrap) + 8px);margin:0 auto;padding:0 12px 0 16px;background:rgba(255,255,255,.94);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border:1px solid rgba(43,26,18,.08);border-radius:16px;box-shadow:0 10px 30px -18px rgba(43,26,18,.45);pointer-events:auto}
+@media (min-width:1100px){.head-row{padding:0 14px 0 22px}}
+.site-head .wrap.head-row{width:auto}
+/* Make room under the floating header; the section's own background shows through the gap. */
+.site-main>:first-child{border-top:calc(var(--head-h) + var(--head-gap) * 2) solid transparent}
 .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;flex:none}
 .brand img{width:46px;height:40px;object-fit:contain}
 .brand-name{display:flex;flex-direction:column;font-weight:700;font-size:1.05rem;line-height:1.05;letter-spacing:.01em}
@@ -74,7 +81,7 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 .progress.is-on{opacity:1}
 
 /* Mobile navigation drawer */
-.nav{position:fixed;inset:var(--head-h) 0 0 0;background:var(--paper);overflow-y:auto;overscroll-behavior:contain;padding:8px var(--gutter) 120px;display:none}
+.nav{position:fixed;inset:calc(var(--head-h) + var(--head-gap) * 2 + var(--wp-admin--admin-bar--height,0px)) var(--gutter) auto var(--gutter);max-height:calc(100vh - var(--head-h) - var(--head-gap) * 3 - var(--wp-admin--admin-bar--height,0px));border-radius:16px;box-shadow:0 20px 40px -20px rgba(43,26,18,.5);background:var(--paper);overflow-y:auto;overscroll-behavior:contain;padding:8px 20px 24px;display:none}
 .nav-open .nav{display:block;animation:navIn .22s ease}
 @keyframes navIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .nav-open{overflow:hidden}
@@ -107,7 +114,7 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 @media (min-width:1100px){
 	.head-cta{display:inline-flex}
 	.menu-btn,.nav-extra{display:none}
-	.nav{position:static;display:block;background:none;padding:0;overflow:visible;margin-left:24px;animation:none}
+	.nav{position:static;display:block;background:none;padding:0;overflow:visible;margin-left:24px;animation:none;max-height:none;border-radius:0;box-shadow:none}
 	.nav-list{display:flex;gap:2px}
 	.nav-item{border:0;display:block;position:relative}
 	.nav-link{padding:10px 12px;font-size:.98rem;border-radius:var(--radius)}
