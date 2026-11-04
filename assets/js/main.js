@@ -150,7 +150,7 @@
 						status.hidden = false;
 						status.classList.toggle('is-error', !j.success);
 						status.textContent = (j.data && j.data.message) || (j.success ? 'Sent.' : 'Something went wrong.');
-						if (j.success) { form.classList.add('is-sent'); form.reset(); if (form.classList.contains('form--quote')) d.dispatchEvent(new CustomEvent('aria:sent')); }
+						if (j.success) { form.classList.add('is-sent'); form.reset(); }
 					})
 					.catch(function () {
 						status.hidden = false; status.classList.add('is-error');
@@ -224,40 +224,8 @@
 		});
 	}
 
-	/* ---------- Inquiry list: "Add to inquiry" on product cards ---------- */
-	var INQ = 'aria_inq';
-	function inqGet() { try { return JSON.parse(localStorage.getItem(INQ)) || []; } catch (e) { return []; } }
-	function inqSet(list) { try { localStorage.setItem(INQ, JSON.stringify(list)); } catch (e) {} inqPaint(d); }
-	function inqPaint(scope) {
-		var list = inqGet();
-		$$('[data-inq]', scope).forEach(function (a) { a.classList.toggle('is-added', list.indexOf(a.getAttribute('data-inq')) > -1); });
-		$$('[data-inq-count]').forEach(function (c) { c.textContent = list.length; c.hidden = !list.length; });
-	}
-	d.addEventListener('click', function (e) {
-		var a = e.target.closest('[data-inq]');
-		if (!a) return;
-		e.preventDefault();
-		var list = inqGet(), t = a.getAttribute('data-inq'), i = list.indexOf(t);
-		if (i > -1) list.splice(i, 1); else list.push(t);
-		inqSet(list);
-	});
-	/* Quote form: fill in the chosen products. */
-	function inqFill(scope) {
-		var list = inqGet();
-		$$('form.form--quote', scope).forEach(function (form) {
-			var sel = form.querySelector('select[name=product]'), msg = form.querySelector('textarea[name=message]');
-			if (!list.length || !sel || sel.value) return;
-			var want = list.length === 1 ? list[0] : sel.options[sel.options.length - 1].text;
-			for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].text === want) { sel.selectedIndex = i; break; } }
-			if (list.length > 1 && msg && !msg.value) msg.value = 'Products: ' + list.join(', ') + '\n';
-			form.addEventListener('submit', function () { form._inq = true; });
-		});
-	}
-	d.addEventListener('aria:sent', function () { inqSet([]); });
-
 	function initPage(scope) {
 		initTabs(scope); initFilters(scope); initYouTube(scope); initForms(scope); initLoadMore(scope); initGallery(scope);
-		inqPaint(scope); inqFill(scope);
 	}
 	initPage(d);
 

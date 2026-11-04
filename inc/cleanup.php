@@ -77,7 +77,7 @@ add_filter( 'rest_endpoints', function ( $endpoints ) {
 
 /* Preload the one font file and preconnect nothing else (everything is local). */
 add_action( 'wp_head', function () {
-	foreach ( array( 'manrope' => 'head', 'inter' => 'body' ) as $font => $role ) {
+	foreach ( array( 'montserrat' => 'head', 'archivo' => 'body' ) as $font => $role ) {
 		if ( function_exists( 'aria_font_choice' ) && aria_font_choice( $role ) ) {
 			continue; // Replaced by a font chosen in the Customizer.
 		}

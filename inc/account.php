@@ -258,21 +258,3 @@ add_action( 'admin_init', function () {
 	}
 	update_option( 'aria_account_page', 1 );
 } );
-
-/* Make sure /quality/ exists (linked from the main menu). Text can be edited like any page. */
-add_action( 'admin_init', function () {
-	if ( get_option( 'aria_quality_page' ) || ! current_user_can( 'publish_pages' ) ) {
-		return;
-	}
-	if ( ! get_page_by_path( 'quality' ) ) {
-		wp_insert_post( array(
-			'post_type'    => 'page',
-			'post_status'  => 'publish',
-			'post_name'    => 'quality',
-			'post_title'   => 'Quality and food safety',
-			'post_excerpt' => 'How Aria Foods sorts, processes and packs dates for export, and the certificates behind it.',
-			'post_content' => "<!-- wp:paragraph --><p>Every shipment is sorted, washed, processed and packed in our own certified plants, so the grade you approve on the sample is the grade that arrives at your port.</p><!-- /wp:paragraph -->\n<!-- wp:heading --><h2>From orchard to container</h2><!-- /wp:heading -->\n<!-- wp:list --><ul><li>Selection and grading by size, moisture and appearance</li><li>Washing and drying before packing</li><li>Packing to your specification: bulk cartons, bags, IBC tanks or private label</li><li>Transport, customs and export documents handled by our export team</li></ul><!-- /wp:list -->\n<!-- wp:heading --><h2>Certificates</h2><!-- /wp:heading -->\n<!-- wp:paragraph --><p>Our quality and food safety management systems are certified to ISO 9001, ISO 22000 and HACCP. Open a certificate below to check it.</p><!-- /wp:paragraph -->",
-		) );
-	}
-	update_option( 'aria_quality_page', 1 );
-} );

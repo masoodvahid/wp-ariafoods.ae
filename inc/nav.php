@@ -15,20 +15,19 @@ function aria_default_menu() {
 	};
 	return array(
 		array( 'title' => 'Products', 'url' => $p( 'dates-products' ), 'classes' => array( 'mega-products' ), 'children' => array() ),
-		array( 'title' => 'Solutions', 'url' => $p( 'ariafoods-bulk-service' ), 'classes' => array(), 'children' => array(
-			array( 'title' => 'Bulk & food service', 'url' => $p( 'ariafoods-bulk-service' ), 'desc' => 'Cartons, bags and IBC tanks for importers and factories' ),
+		array( 'title' => 'Date syrup', 'url' => $p( 'product/date-syrup' ), 'classes' => array(), 'children' => array() ),
+		array( 'title' => 'Services', 'url' => $p( 'ariafoods-bulk-service' ), 'classes' => array(), 'children' => array(
+			array( 'title' => 'Bulk & food service', 'url' => $p( 'ariafoods-bulk-service' ), 'desc' => 'Cartons, bags, IBC tanks for importers and factories' ),
 			array( 'title' => 'Private label', 'url' => $p( 'customer-packing' ), 'desc' => 'Your brand on 250–700 g retail packs' ),
 			array( 'title' => 'Request a sample', 'url' => $p( 'sample-request' ), 'desc' => 'Check quality before you order' ),
 			array( 'title' => 'Track an order', 'url' => $p( 'tracking-orders' ), 'desc' => 'Status of a confirmed shipment' ),
 		) ),
-		array( 'title' => 'Quality', 'url' => $p( 'quality' ), 'classes' => array(), 'children' => array() ),
+		array( 'title' => 'Insights', 'url' => $p( 'news' ), 'classes' => array(), 'children' => array() ),
 		array( 'title' => 'Company', 'url' => $p( 'about-us' ), 'classes' => array(), 'children' => array(
-			array( 'title' => 'About Aria Foods', 'url' => $p( 'about-us' ), 'desc' => 'Dubai branch, factories and export team' ),
+			array( 'title' => 'About Aria Foods', 'url' => $p( 'about-us' ), 'desc' => 'Factories, quality control, export team' ),
 			array( 'title' => 'Managing board', 'url' => $p( 'managing-board' ), 'desc' => 'The people behind the company' ),
-			array( 'title' => 'Market insights', 'url' => $p( 'news' ), 'desc' => 'Harvest reports and sourcing guides' ),
-			array( 'title' => 'Catalogue', 'url' => $p( 'ariafoods-dates-catalogue' ), 'desc' => 'Full range with specifications' ),
+			array( 'title' => 'Catalogue 2025', 'url' => $p( 'ariafoods-dates-catalogue' ), 'desc' => 'Full range with specifications' ),
 			array( 'title' => 'Contact', 'url' => $p( 'contact-us' ), 'desc' => 'Office, phone and trade desk' ),
-			array( 'title' => 'My account', 'url' => aria_account_url(), 'desc' => 'Your requests and company profile' ),
 		) ),
 	);
 }
@@ -183,19 +182,3 @@ function aria_footer_links( $location, $fallback ) {
 	}
 	echo '</ul>';
 }
-
-/*
- * Design v2 (1.7.0): the header and footer follow the theme's own structure. Menus built by the
- * importer stay saved under Appearance → Menus; they are only unassigned once, and can be
- * assigned again at any time.
- */
-add_action( 'admin_init', function () {
-	if ( get_option( 'aria_nav_v2' ) ) {
-		return;
-	}
-	$loc = get_nav_menu_locations();
-	unset( $loc['primary'], $loc['footer'] );
-	set_theme_mod( 'nav_menu_locations', $loc );
-	update_option( 'aria_nav_v2', 1, false );
-	delete_transient( 'aria_mega' );
-} );

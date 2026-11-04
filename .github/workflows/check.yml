@@ -1,0 +1,8 @@
+name: PHP check
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l

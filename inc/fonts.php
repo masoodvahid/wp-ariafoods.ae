@@ -20,7 +20,6 @@ function aria_font_library() {
 		'Inter'             => array( $all, $sans ),
 		'Poppins'           => array( $all, $sans ),
 		'Montserrat'        => array( $all, $sans ),
-		'Archivo Black'     => array( array( 400 ), $sans ),
 		'Manrope'           => array( array( 300, 400, 500, 600, 700, 800 ), $sans ),
 		'Plus Jakarta Sans' => array( array( 300, 400, 500, 600, 700, 800 ), $sans ),
 		'DM Sans'           => array( $all, $sans ),
@@ -81,8 +80,8 @@ add_action( 'customize_register', function ( WP_Customize_Manager $wp ) {
 		$choices[ $name ] = $name;
 	}
 	$fields = array(
-		'head' => __( 'Headings font (theme default: Manrope)', 'aria' ),
-		'body' => __( 'Body text font (theme default: Inter)', 'aria' ),
+		'head' => __( 'Headings font (theme default: Montserrat)', 'aria' ),
+		'body' => __( 'Body text font (theme default: Archivo)', 'aria' ),
 	);
 	foreach ( $fields as $role => $label ) {
 		$wp->add_setting( 'aria_font_' . $role, array(

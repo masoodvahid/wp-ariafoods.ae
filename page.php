@@ -42,7 +42,7 @@ while ( have_posts() ) :
 						<?php aria_contact_list(); ?>
 					</div>
 				<?php endif; ?>
-				<?php if ( 'about-us' === $slug || 'quality' === $slug ) : ?>
+				<?php if ( 'about-us' === $slug ) : ?>
 					<div class="certs-wrap"><?php aria_cert_row(); ?></div>
 				<?php endif; ?>
 				<?php aria_faq_block( $faq ); ?>
@@ -61,7 +61,7 @@ while ( have_posts() ) :
 						?>
 					</h2>
 					<?php
-					$preset = isset( $_GET['item'] ) ? sanitize_text_field( wp_unslash( $_GET['item'] ) ) : ''; // phpcs:ignore
+					$preset = isset( $_GET['product'] ) ? sanitize_text_field( wp_unslash( $_GET['product'] ) ) : ''; // phpcs:ignore
 					echo aria_form( $form, array( 'product' => $preset ) ); // phpcs:ignore
 					?>
 				</div>
@@ -72,15 +72,9 @@ while ( have_posts() ) :
 		?>
 		<div class="wrap narrow section section--tight">
 			<div class="prose"><?php the_content(); ?></div>
-			<?php if ( 'quality' === $slug ) : ?>
-				<div class="certs-wrap"><?php aria_cert_row(); ?></div>
-			<?php endif; ?>
 			<?php aria_faq_block( $faq ); ?>
 		</div>
 		<?php
-		if ( 'quality' === $slug ) {
-			aria_quote_band();
-		}
 	endif;
 endwhile;
 

@@ -47,11 +47,6 @@ function aria_form( $type = 'quote', $args = array() ) {
 	$sent    = isset( $_GET['sent'] ) && $type === sanitize_key( wp_unslash( $_GET['sent'] ) ); // phpcs:ignore
 	$product = $args['product'];
 	$pre     = function_exists( 'aria_customer_prefill' ) ? aria_customer_prefill() : array();
-	foreach ( array( 'quantity', 'port' ) as $gk ) { // Values passed from the home page inquiry builder.
-		if ( empty( $pre[ $gk ] ) && ! empty( $_GET[ $gk ] ) ) { // phpcs:ignore
-			$pre[ $gk ] = sanitize_text_field( wp_unslash( $_GET[ $gk ] ) ); // phpcs:ignore
-		}
-	}
 	$v       = function ( $k ) use ( $pre ) {
 		return isset( $pre[ $k ] ) ? ' value="' . esc_attr( $pre[ $k ] ) . '"' : '';
 	};
@@ -88,7 +83,7 @@ function aria_form( $type = 'quote', $args = array() ) {
 						<select id="<?php echo esc_attr( $args['id'] ); ?>-qty" name="quantity" required>
 							<option value=""><?php esc_html_e( 'Choose a volume', 'aria' ); ?></option>
 							<?php foreach ( aria_quantity_options() as $q ) : ?>
-								<option<?php selected( isset( $pre['quantity'] ) && $pre['quantity'] === $q ); ?>><?php echo esc_html( $q ); ?></option>
+								<option><?php echo esc_html( $q ); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</p>

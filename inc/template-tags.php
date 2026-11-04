@@ -24,26 +24,23 @@ function aria_card_facts( $post_id ) {
 
 function aria_product_card( $post_id = null, $eager = false ) {
 	$post_id = $post_id ? $post_id : get_the_ID();
-	$facts   = array_slice( aria_card_facts( $post_id ), 0, 2, true );
+	$facts   = aria_card_facts( $post_id );
 	$kind    = aria_is_variety( $post_id ) ? 'dates' : 'ingredients';
-	$title   = get_the_title( $post_id );
-	$link    = get_permalink( $post_id );
 	?>
 	<article class="pcard" data-kind="<?php echo esc_attr( $kind ); ?>">
-		<a class="pcard-media" href="<?php echo esc_url( $link ); ?>" tabindex="-1" aria-hidden="true"><?php echo aria_product_image( $post_id, 'aria-card', array( 'alt' => '', 'loading' => $eager ? 'eager' : 'lazy', 'sizes' => '(min-width: 1100px) 290px, (min-width: 700px) 33vw, 50vw' ) ); // phpcs:ignore ?></a>
-		<div class="pcard-body">
-			<h3 class="pcard-title"><a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $title ); ?></a></h3>
-			<ul class="pcard-facts">
-				<?php foreach ( $facts as $k => $v ) : ?>
-					<li><?php echo esc_html( $k ); ?> <?php echo esc_html( $v ); ?></li>
-				<?php endforeach; ?>
-				<?php if ( count( $facts ) < 2 ) : ?>
-					<li><?php echo 'dates' === $kind ? esc_html__( 'Bulk / Private label', 'aria' ) : esc_html__( 'Bulk supply for manufacturers', 'aria' ); ?></li>
+		<a class="pcard-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>">
+			<span class="pcard-media"><?php echo aria_product_image( $post_id, 'aria-card', array( 'alt' => get_the_title( $post_id ), 'loading' => $eager ? 'eager' : 'lazy', 'sizes' => '(min-width: 1100px) 280px, (min-width: 700px) 33vw, 50vw' ) ); // phpcs:ignore ?></span>
+			<span class="pcard-body">
+				<h3 class="pcard-title"><?php echo esc_html( get_the_title( $post_id ) ); ?></h3>
+				<?php if ( $facts ) : ?>
+					<dl class="pcard-facts">
+						<?php foreach ( $facts as $k => $v ) : ?>
+							<div><dt><?php echo esc_html( $k ); ?></dt><dd><?php echo esc_html( $v ); ?></dd></div>
+						<?php endforeach; ?>
+					</dl>
 				<?php endif; ?>
-			</ul>
-			<a class="pcard-spec" href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'View specifications', 'aria' ); ?> <?php echo aria_icon( 'out' ); // phpcs:ignore ?><span class="screen-reader-text"> – <?php echo esc_html( $title ); ?></span></a>
-			<a class="pcard-add" href="<?php echo esc_url( add_query_arg( 'item', rawurlencode( $title ), home_url( '/get-a-quote/' ) ) ); ?>" data-inq="<?php echo esc_attr( $title ); ?>"><?php echo aria_icon( 'plus-c', 'icon i-add' ) . aria_icon( 'check-c', 'icon i-added' ); // phpcs:ignore ?><span class="t-add"><?php esc_html_e( 'Add to inquiry', 'aria' ); ?></span><span class="t-added"><?php esc_html_e( 'Added to inquiry', 'aria' ); ?></span><span class="screen-reader-text"> – <?php echo esc_html( $title ); ?></span></a>
-		</div>
+			</span>
+		</a>
 	</article>
 	<?php
 }
