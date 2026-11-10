@@ -235,11 +235,10 @@ function aria_certs() {
 /** Order-quantity options shared by forms. */
 function aria_quantity_options() {
 	return array(
-		'LCL 1–5 ton',
-		'LCL 5–10 ton',
-		'1 × 20 ft container (up to 15 ton)',
-		'1 × 40 ft container (up to 25 ton)',
-		'1 × 40 ft container (over 25 ton)',
+		'1 × 20 ft container (about 15 ton)',
+		'1 × 40 ft container (about 25 ton)',
+		'2–5 containers',
+		'More than 5 containers / regular supply',
 	);
 }
 

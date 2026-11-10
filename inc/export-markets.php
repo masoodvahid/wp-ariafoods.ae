@@ -50,6 +50,26 @@ function aria_export_markets() {
 				'Labels to FSSAI rules on request (printed at packing)',
 			),
 			'buyer'     => 'You need your IEC and FSSAI import licence; your customs broker clears the cargo. We prepare the full document set before loading so clearance is not held up.',
+			// Section in the buyers' own language (lang = BCP-47 code, dir = ltr or rtl).
+			'local'     => array(
+				'lang'   => 'hi',
+				'dir'    => 'ltr',
+				'label'  => 'हिन्दी',
+				'title'  => 'हम ईरानी खजूर के थोक निर्यातक हैं',
+				'paras'  => array(
+					'Aria Foods ईरानी खजूर और खजूर से बने उत्पादों का निर्यातक है। हम भारत के आयातकों, थोक विक्रेताओं और खाद्य उद्योगों को कीमिया (मज़ाफ़ती), पियारोम, ज़ाहेदी और सायर खजूर, साथ ही खजूर का पेस्ट और खजूर का सिरप थोक में सप्लाई करते हैं।',
+					'हमारा माल दुबई के गोदाम में तैयार रहता है। अनुबंध और इनवॉइस हमारी यूएई कंपनी से जारी होते हैं, और आपका कंटेनर कुछ ही दिनों में जेबेल अली से न्हावा शेवा, मुंद्रा, चेन्नई या कोलकाता के लिए रवाना हो जाता है।',
+					'अपनी पसंद की किस्म, पैकिंग, मात्रा और बंदरगाह बताइए – हम एक कार्यदिवस के भीतर लिखित कोटेशन भेजते हैं। हमारा पत्राचार अंग्रेज़ी में होता है।',
+				),
+				'points' => array(
+					'न्यूनतम ऑर्डर: एक 20 फ़ुट कंटेनर (लगभग 15 टन)',
+					'केवल थोक और निर्यात ऑर्डर – खुदरा बिक्री नहीं',
+					'भुगतान: यूएई बैंकों के माध्यम से TT या साख पत्र (LC), US डॉलर या दिरहम में',
+					'लोडिंग से पहले सभी दस्तावेज़ तैयार: मूल प्रमाणपत्र, फाइटोसैनिटरी और स्वास्थ्य प्रमाणपत्र',
+					'ISO 22000, ISO 9001 और HACCP प्रमाणित उत्पादन',
+				),
+				'cta'    => 'कोटेशन का अनुरोध करें',
+			),
 		),
 	);
 }
@@ -158,6 +178,7 @@ function aria_export_market( $post_id = null ) {
 		'buyer'     => 'Your customs broker clears the cargo; we prepare the full document set before loading.',
 		'flag'      => array(),
 		'emblem'    => '',
+		'local'     => array(),
 	) );
 }
 

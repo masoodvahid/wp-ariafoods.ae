@@ -87,6 +87,36 @@ $faq   = aria_faq_items( get_the_ID() );
 	</div>
 </section>
 
+<?php
+$loc = is_array( $m['local'] ) ? $m['local'] : array();
+if ( ! empty( $loc['title'] ) ) :
+	$ldir = ( isset( $loc['dir'] ) && 'rtl' === $loc['dir'] ) ? 'rtl' : 'ltr';
+	?>
+<section class="section section--tight mk-local-wrap" aria-labelledby="local-title">
+	<div class="wrap">
+		<div class="mk-local" lang="<?php echo esc_attr( isset( $loc['lang'] ) ? $loc['lang'] : '' ); ?>" dir="<?php echo esc_attr( $ldir ); ?>"<?php echo $m['flag'] ? ' style="--fl1:' . esc_attr( $m['flag'][0] ) . ';--fl3:' . esc_attr( end( $m['flag'] ) ) . '"' : ''; // phpcs:ignore ?>>
+			<div class="mk-local-main">
+				<?php if ( ! empty( $loc['label'] ) ) : ?><p class="mk-local-tag"><?php echo esc_html( $loc['label'] ); ?></p><?php endif; ?>
+				<h2 id="local-title"><?php echo esc_html( $loc['title'] ); ?></h2>
+				<?php foreach ( (array) ( isset( $loc['paras'] ) ? $loc['paras'] : array() ) as $para ) : ?>
+					<p><?php echo esc_html( $para ); ?></p>
+				<?php endforeach; ?>
+				<?php if ( ! empty( $loc['cta'] ) ) : ?>
+					<p class="mk-local-cta"><button type="button" class="btn btn--primary" data-quote-open><?php echo esc_html( $loc['cta'] ); ?></button></p>
+				<?php endif; ?>
+			</div>
+			<?php if ( ! empty( $loc['points'] ) ) : ?>
+				<ul class="mk-local-points">
+					<?php foreach ( (array) $loc['points'] as $pt ) : ?>
+						<li><?php echo aria_icon( 'check' ); // phpcs:ignore ?><span><?php echo esc_html( $pt ); ?></span></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+	</div>
+</section>
+<?php endif; ?>
+
 <section class="section section--tint" aria-labelledby="var-title">
 	<div class="wrap">
 		<div class="section-head section-head--row">

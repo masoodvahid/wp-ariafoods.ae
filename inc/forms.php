@@ -79,7 +79,7 @@ function aria_form( $type = 'quote', $args = array() ) {
 					</p>
 				<?php endif; ?>
 				<?php if ( 'quote' === $type ) : ?>
-					<p class="field"><label for="<?php echo esc_attr( $args['id'] ); ?>-qty"><?php esc_html_e( 'Estimated quantity', 'aria' ); ?></label>
+					<p class="field"><label for="<?php echo esc_attr( $args['id'] ); ?>-qty"><?php esc_html_e( 'Quantity', 'aria' ); ?> <span class="opt"><?php esc_html_e( '(min. one 20 ft container)', 'aria' ); ?></span></label>
 						<select id="<?php echo esc_attr( $args['id'] ); ?>-qty" name="quantity" required>
 							<option value=""><?php esc_html_e( 'Choose a volume', 'aria' ); ?></option>
 							<?php foreach ( aria_quantity_options() as $q ) : ?>
@@ -96,7 +96,7 @@ function aria_form( $type = 'quote', $args = array() ) {
 		</div>
 		<div class="form-foot">
 			<button class="btn btn--primary" type="submit"><?php echo esc_html( $labels[ $type ] ); ?></button>
-			<p class="form-note"><?php esc_html_e( 'We reply within one working day. Wholesale and export orders only.', 'aria' ); ?></p>
+			<p class="form-note"><?php echo 'quote' === $type ? esc_html__( 'We reply within one working day. Full containers only – minimum order one 20 ft container.', 'aria' ) : esc_html__( 'We reply within one working day. Wholesale and export orders only.', 'aria' ); ?></p>
 		</div>
 		<p class="form-status" role="status" aria-live="polite"<?php echo $sent ? '' : ' hidden'; ?>><?php echo $sent ? esc_html__( 'Thank you. Your request reached our trade desk.', 'aria' ) : ''; ?></p>
 	</form>

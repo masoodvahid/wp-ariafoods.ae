@@ -25,7 +25,7 @@ $hero   = aria_opt( 'hero_image' );
 	<div class="wrap hero-grid">
 		<div class="hero-copy">
 			<h1 id="hero-title"><?php esc_html_e( 'Iranian dates and date syrup, supplied by the container', 'aria' ); ?></h1>
-			<p class="hero-lead"><?php esc_html_e( 'Nine date varieties and five date ingredients for importers, wholesalers and food manufacturers – packed in bulk or under your own label, shipped from 1 ton LCL to full 40 ft containers.', 'aria' ); ?></p>
+			<p class="hero-lead"><?php esc_html_e( 'Nine date varieties and five date ingredients for importers, wholesalers and food manufacturers – packed in bulk or under your own label, shipped by the full container – from one 20 ft to multi-container orders.', 'aria' ); ?></p>
 			<div class="hero-ctas">
 				<a class="btn btn--primary btn--lg" href="#quote"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
 				<a class="btn btn--ghost-light btn--lg" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?> <?php esc_html_e( 'WhatsApp the trade desk', 'aria' ); ?></a>
@@ -78,7 +78,7 @@ $hero   = aria_opt( 'hero_image' );
 	<div class="wrap facts-row">
 		<p><strong><?php esc_html_e( 'Three factories', 'aria' ); ?></strong> <?php esc_html_e( 'for sorting, washing, processing and packing', 'aria' ); ?></p>
 		<p><strong><?php esc_html_e( '30+ years', 'aria' ); ?></strong> <?php esc_html_e( 'of family experience in the date trade', 'aria' ); ?></p>
-		<p><strong><?php esc_html_e( 'LCL to 40 ft', 'aria' ); ?></strong> <?php esc_html_e( 'from 1 ton to full containers', 'aria' ); ?></p>
+		<p><strong><?php esc_html_e( '20 ft to 40 ft', 'aria' ); ?></strong> <?php esc_html_e( 'full containers – minimum one 20 ft', 'aria' ); ?></p>
 		<p><strong><?php esc_html_e( 'One export desk', 'aria' ); ?></strong> <?php esc_html_e( 'for transport, customs and documents', 'aria' ); ?></p>
 	</div>
 </section>
@@ -204,7 +204,7 @@ if ( $products->have_posts() ) :
 				<h3><?php esc_html_e( 'Order volumes', 'aria' ); ?></h3>
 				<table>
 					<tbody>
-						<tr><th>LCL</th><td>1–10 t</td></tr>
+						<tr><th><?php esc_html_e( 'Minimum', 'aria' ); ?></th><td><?php esc_html_e( '1 × 20 ft', 'aria' ); ?></td></tr>
 						<tr><th>20 ft</th><td><?php esc_html_e( 'up to ~15 t', 'aria' ); ?></td></tr>
 						<tr><th>40 ft</th><td><?php esc_html_e( '25 t and more', 'aria' ); ?></td></tr>
 					</tbody>

@@ -15,7 +15,7 @@ function aria_seed_pages() {
 		'home' => array(
 			'title' => 'Home',
 			'seo_title' => 'Iranian Dates & Date Syrup Wholesale Supplier | Aria Foods',
-			'seo_desc'  => 'Wholesale supplier of Iranian dates and date ingredients: Mazafati, Piarom, Zahedi, Sayer, bulk date syrup (Brix 72–78), paste and powder. FCL/LCL export and private label.',
+			'seo_desc'  => 'Wholesale supplier of Iranian dates and date ingredients: Mazafati, Piarom, Zahedi, Sayer, bulk date syrup (Brix 72–78), paste and powder. full-container export and private label.',
 			'content'   => '',
 		),
 		'news' => array(
@@ -78,9 +78,9 @@ HTML,
 			'title'     => 'Bulk & food service',
 			'excerpt'   => 'Dates and date ingredients by the ton for importers, wholesalers, repackers and food factories.',
 			'seo_title' => 'Bulk Dates Supplier – Wholesale Iranian Dates by the Container | Aria Foods',
-			'seo_desc'  => 'Buy Iranian dates in bulk: 5–10 kg cartons, 30 kg bags, date syrup in gallons and 1,400 kg IBC tanks. LCL from 1 ton, 20 ft and 40 ft containers. Request a quote.',
+			'seo_desc'  => 'Buy Iranian dates in bulk: 5–10 kg cartons, 30 kg bags, date syrup in gallons and 1,400 kg IBC tanks. Full 20 ft and 40 ft containers only. Request a quote.',
 			'form'      => 'quote',
-			'faq'       => "Q: What is the minimum order for bulk dates?\nA: LCL shipments start from 1 ton. A 20 ft container carries up to about 15 tons and a 40 ft container 25 tons or more, depending on product and packing.\nQ: How are bulk dates packed?\nA: Whole dates are packed in 5 to 10 kg cartons or 30 kg bags. Date syrup and liquid date sugar are packed in polyethylene gallons or 1,400 kg IBC tanks.\nQ: Which markets buy bulk Iranian dates?\nA: Price-sensitive markets such as India and Bangladesh mostly buy for fruit markets and whole-date consumption; buyers in Europe and North America mostly supply confectionery, syrup and food factories.",
+			'faq'       => "Q: What is the minimum order for bulk dates?\nA: The minimum order is one 20 ft container. A 20 ft container carries up to about 15 tons and a 40 ft container 25 tons or more, depending on product and packing.\nQ: How are bulk dates packed?\nA: Whole dates are packed in 5 to 10 kg cartons or 30 kg bags. Date syrup and liquid date sugar are packed in polyethylene gallons or 1,400 kg IBC tanks.\nQ: Which markets buy bulk Iranian dates?\nA: Price-sensitive markets such as India and Bangladesh mostly buy for fruit markets and whole-date consumption; buyers in Europe and North America mostly supply confectionery, syrup and food factories.",
 			'content'   => <<<'HTML'
 <p class="lead">Bulk (food service) is the channel for buyers who need dates in volume: importers, wholesalers, fruit markets, repackers and factories that use dates as a natural sweetener.</p>
 <h2>What bulk buyers order from us</h2>
@@ -95,7 +95,6 @@ HTML,
 <table>
 <thead><tr><th>Shipment</th><th>Typical volume</th></tr></thead>
 <tbody>
-<tr><td>LCL</td><td>1–5 tons or 5–10 tons</td></tr>
 <tr><td>20 ft container</td><td>Up to about 15 tons</td></tr>
 <tr><td>40 ft container</td><td>Up to about 25 tons, or more depending on packing</td></tr>
 </tbody>
@@ -138,7 +137,7 @@ HTML,
 			'title'     => 'Request a quote',
 			'excerpt'   => 'Tell us the product, volume and destination port. We reply within one working day.',
 			'seo_title' => 'Request a Quote for Bulk Dates & Date Syrup | Aria Foods',
-			'seo_desc'  => 'Get a price for Iranian dates, date syrup, paste or powder: choose product, volume (LCL, 20 ft or 40 ft) and destination port. Reply within one working day.',
+			'seo_desc'  => 'Get a price for Iranian dates, date syrup, paste or powder: choose product, volume (20 ft or 40 ft containers) and destination port. Reply within one working day.',
 			'form'      => 'quote',
 			'content'   => '',
 		),
@@ -212,7 +211,7 @@ function aria_seed_products() {
 				array( 'Storage', 'Refrigerated at about 4 °C for long-term storage' ),
 				array( 'Origin', 'Iran' ),
 			),
-			'faq'       => "Q: What Brix is your date syrup?\nA: We supply date syrup between Brix 72 and 78, adjusted to each order.\nQ: Does your date syrup contain additives?\nA: No. The only permitted addition is citric acid.\nQ: How is bulk date syrup packed for export?\nA: In polyethylene gallons or 1,400 kg IBC tanks, and in jars or cans for private label orders.\nQ: How should date syrup be stored?\nA: For long-term storage keep it refrigerated at around 4 °C to slow sugar crystallisation.\nQ: What is the minimum order for date syrup?\nA: LCL shipments start from 1 ton; full 20 ft and 40 ft containers are available. Tell us your monthly volume and we will plan regular shipments.\nQ: Is date syrup a replacement for sugar in food production?\nA: Yes. Manufacturers use date syrup to replace part or all of refined sugar, glucose syrup or honey in bakery, beverage, dairy and confectionery recipes.",
+			'faq'       => "Q: What Brix is your date syrup?\nA: We supply date syrup between Brix 72 and 78, adjusted to each order.\nQ: Does your date syrup contain additives?\nA: No. The only permitted addition is citric acid.\nQ: How is bulk date syrup packed for export?\nA: In polyethylene gallons or 1,400 kg IBC tanks, and in jars or cans for private label orders.\nQ: How should date syrup be stored?\nA: For long-term storage keep it refrigerated at around 4 °C to slow sugar crystallisation.\nQ: What is the minimum order for date syrup?\nA: The minimum order is one full 20 ft container; 40 ft and multi-container orders are available. Tell us your monthly volume and we will plan regular shipments.\nQ: Is date syrup a replacement for sugar in food production?\nA: Yes. Manufacturers use date syrup to replace part or all of refined sugar, glucose syrup or honey in bakery, beverage, dairy and confectionery recipes.",
 			'append'    => <<<'HTML'
 <h2>Date syrup for food and beverage manufacturers</h2>
 <p>Date syrup (also called dibs or date molasses) is the concentrated sugar of the date fruit. Manufacturers use it to replace refined sugar, glucose syrup or honey while adding colour, body and a caramel note. We supply it in bulk to factories, ingredient distributors and repackers.</p>
@@ -224,7 +223,7 @@ function aria_seed_products() {
 <li><strong>Quality:</strong> no burnt, fermented or sour taste; no granulation for at least 48 hours</li>
 </ul>
 <h2>Bulk packing and volumes</h2>
-<p>Date syrup ships in polyethylene gallons and 1,400 kg IBC tanks. Orders start from LCL volumes of 1 ton; a 20 ft container carries up to about 15 tons. For regular buyers we plan monthly or quarterly shipments against a fixed specification.</p>
+<p>Date syrup ships in polyethylene gallons and 1,400 kg IBC tanks. The minimum order is one 20 ft container, which carries up to about 15 tons. For regular buyers we plan monthly or quarterly shipments against a fixed specification.</p>
 <h2>Where date syrup is used</h2>
 <ul class="ticks cols-2">
 <li>Bread, biscuits, cakes and cereal bars</li>
@@ -263,7 +262,7 @@ HTML,
 			'excerpt'   => 'Dried date powder (date sugar), coarse or fine, with no additives and a long shelf life without refrigeration. Supplied in bulk to food manufacturers.',
 			'packing'   => "Bulk bags and cartons with food-grade liners\nPrivate label packs on request",
 			'uses'      => "Bakery and cereal mixes\nBaby food and snacks\nSports nutrition and protein products\nSpice and seasoning blends\nPartial or full sugar replacement",
-			'faq'       => "Q: What is date powder?\nA: Date powder, or date sugar, is made from dried dates ground to a coarse or fine powder. It can replace all or part of the sugar in food formulations.\nQ: Does date powder need refrigeration?\nA: No. Its low moisture lets it be stored for a long time without refrigeration.\nQ: What colour is your date powder?\nA: From light cream to brown, depending on the date variety and how much pulp is used.\nQ: Can I buy date powder in bulk?\nA: Yes. We export from LCL volumes of 1 ton up to full containers.",
+			'faq'       => "Q: What is date powder?\nA: Date powder, or date sugar, is made from dried dates ground to a coarse or fine powder. It can replace all or part of the sugar in food formulations.\nQ: Does date powder need refrigeration?\nA: No. Its low moisture lets it be stored for a long time without refrigeration.\nQ: What colour is your date powder?\nA: From light cream to brown, depending on the date variety and how much pulp is used.\nQ: Can I buy date powder in bulk?\nA: Yes. We export by the full container, from one 20 ft container.",
 		),
 		'liquid-date-sugar' => array(
 			'order'     => 4,
@@ -286,7 +285,7 @@ HTML,
 		'mazafati-dates' => array(
 			'order'     => 10,
 			'seo_title' => 'Mazafati Dates Wholesale Supplier (Bam / Kimia Dates) | Aria Foods',
-			'seo_desc'  => 'Mazafati (Bam, Kimia) dates from Kerman in bulk and private label: soft black dates, 65–85 pieces per kg, cold-stored. Cartons, retail packs, LCL and containers.',
+			'seo_desc'  => 'Mazafati (Bam, Kimia) dates from Kerman in bulk and private label: soft black dates, 65–85 pieces per kg, cold-stored. Cartons, retail packs, by the full container.',
 			'packing'   => "Retail packs, 250 g to 5 kg\nMother cartons of 12 packs (about 6.8–8.5 kg)\nPrivate label packs",
 			'uses'      => $dates_uses,
 			'faq'       => "Q: Are Mazafati and Kimia dates the same?\nA: Yes. Kimia is a well-known brand name for Mazafati dates, which traders also call Bam dates after the main growing area.\nQ: Do Mazafati dates need cold storage?\nA: Yes. Keep them between -5 and 5 °C; refrigerated, shelf life reaches up to two years.\nQ: When is the Mazafati harvest?\nA: From late August to early October.",

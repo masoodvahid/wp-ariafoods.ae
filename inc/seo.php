@@ -49,7 +49,7 @@ function aria_meta_description() {
 		$fp = (int) get_option( 'page_on_front' );
 		$d  = $fp ? get_post_meta( $fp, '_aria_seo_desc', true ) : '';
 		if ( ! $d ) {
-			$d = 'Wholesale supplier of Iranian dates and date ingredients: Mazafati, Piarom, Zahedi, Sayer, bulk date syrup (Brix 72–78), date paste and powder. FCL/LCL export, private label, ISO 22000 & HACCP.';
+			$d = 'Wholesale supplier of Iranian dates and date ingredients: Mazafati, Piarom, Zahedi, Sayer, bulk date syrup (Brix 72–78), date paste and powder. full-container export, private label, ISO 22000 & HACCP.';
 		}
 	} elseif ( is_singular() ) {
 		$id = get_queried_object_id();
@@ -337,7 +337,7 @@ function aria_parse_faq( $raw ) {
 /** Home FAQ — written for importers; answers stick to facts published by Aria Foods. */
 function aria_home_faq() {
 	return array(
-		array( 'What is the minimum order for Iranian dates?', 'We ship from LCL volumes of 1 to 5 tons up to full containers: a 20 ft container carries up to about 15 tons and a 40 ft container 25 tons or more, depending on product and packing.' ),
+		array( 'What is the minimum order for Iranian dates?', 'The minimum order is one full 20 ft container, which carries up to about 15 tons; a 40 ft container carries 25 tons or more, depending on product and packing. We do not ship part loads (LCL).' ),
 		array( 'Which date varieties can you supply in bulk?', 'Mazafati (Bam), Piarom (Maryam), Zahedi, Sayer (Stamaran), Kabkab, Rabbi, Lulu, Kalute and Khassui, plus date syrup, date paste, date powder, liquid date sugar and chopped dates.' ),
 		array( 'What Brix is your date syrup and how is it packed?', 'Date syrup is supplied at Brix 72 to 78 to your order, with no additives except citric acid. Bulk packing is polyethylene gallons and 1,400 kg IBC tanks.' ),
 		array( 'Can you pack under our own brand?', 'Yes. Private label packs are available from 250 g to 700 g in flexible bags, pressed packs, vacuum packs, plastic tubs and cartons, with your logo or ours.' ),

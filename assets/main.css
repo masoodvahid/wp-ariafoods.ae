@@ -11,7 +11,7 @@
 	--palm:#3e6b55;--tint:#f7f2ec;
 	--paper:#fff;--surface:#fff;--surface-2:#f6f0e9;--field:#fdfbf8;--field-line:#dcd2c6;
 	--text:#2a201b;--muted:#6b5f57;--line:#ece5dc;
-	--sel:#1c1512;--glass:rgba(255,255,255,.9);--sh:43,26,18;
+	--sel:#1c1512;--glass:rgba(255,255,255,.96);--sh:43,26,18;
 	--radius:6px;--radius-lg:14px;
 	--wrap:1240px;--gutter:16px;
 	--head-h:64px;
@@ -91,7 +91,8 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 @media (min-width:1100px){.head-row{padding:0 14px 0 22px}}
 .site-head .wrap.head-row{width:auto}
 /* Make room under the floating header; the section's own background shows through the gap. */
-.site-main>:first-child{border-top:calc(var(--head-h) + var(--head-gap) * 2) solid transparent}
+/* Room for the floating header: the first section's own background (photo, gradient, tint) runs up behind it, no plain strip. */
+.site-main>:first-child:not(.product)::before,.site-main>.product>:first-child::before{content:"";display:block;height:calc(var(--head-h) + var(--head-gap) * 2)}
 .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;flex:none}
 .brand img{width:46px;height:40px;object-fit:contain}
 .brand-name{display:flex;flex-direction:column;font-weight:700;font-size:1.05rem;line-height:1.05;letter-spacing:.01em}
@@ -187,7 +188,7 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 .ticket{background:var(--surface);color:var(--ink);border-radius:var(--radius-lg);padding:18px 18px 20px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6);position:relative}
 .ticket::before{content:"";position:absolute;left:0;right:0;top:54px;border-top:2px dashed #d9cdbd}
 .ticket-head{margin:0 0 26px;font-size:.82rem;font-weight:600;color:var(--muted);display:flex;justify-content:space-between}
-.ticket-head::after{content:"FCL · LCL";color:var(--syrup)}
+.ticket-head::after{content:"FCL only";color:var(--syrup)}
 .ticket-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -4px 14px;padding:0 4px}
 .ticket-tabs::-webkit-scrollbar{display:none}
 .ticket-tabs button{flex:none;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:7px 14px;font:600 .9rem/1 var(--f);cursor:pointer}
@@ -690,7 +691,23 @@ html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:
 .mk-flag-bands i{flex:1}
 .mk-flag-emblem{position:absolute;right:22%;top:50%;width:clamp(120px,16vw,220px);height:auto;transform:translateY(-50%) rotate(-6deg)}
 @media (max-width:899px){.mk-flag{width:100%;opacity:.13}.mk-flag-emblem{right:6%;top:24%}}
-.ship-card .ticket-head::after{content:"FCL only"}
 .mk-flag{opacity:.24}
 .mk-flag-emblem{right:auto;left:8%;top:62%;width:clamp(110px,13vw,190px);opacity:.9}
 @media (max-width:899px){.mk-flag-emblem{left:auto;right:6%;top:22%}}
+
+/* Section in the buyers' own language (export market pages) */
+.mk-local-wrap{padding-top:8px}
+.mk-local{position:relative;display:grid;gap:28px;padding:28px 24px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 40px -30px rgba(var(--sh),.5);overflow:hidden}
+.mk-local::before{content:"";position:absolute;inset:0 auto 0 0;width:6px;background:linear-gradient(var(--fl1,var(--syrup)) 0 33.3%,var(--surface-2) 33.3% 66.6%,var(--fl3,var(--palm)) 66.6%)}
+.mk-local[dir=rtl]::before{inset:0 0 0 auto}
+.mk-local:lang(hi){font-family:"Noto Sans Devanagari","Nirmala UI","Kohinoor Devanagari","Devanagari Sangam MN",Mangal,var(--f)}
+.mk-local:lang(hi) h2{font-family:inherit;font-weight:700;line-height:1.35;letter-spacing:0}
+.mk-local:lang(hi) p,.mk-local:lang(hi) li{line-height:1.85}
+.mk-local h2{font-size:clamp(1.45rem,1.1rem + 1.4vw,2rem);margin:0 0 .5em}
+.mk-local-main p{color:var(--muted);max-width:62ch}
+.mk-local-tag{display:inline-block;margin:0 0 12px;padding:3px 12px;border-radius:99px;background:var(--tint);color:var(--syrup-dark)!important;font-weight:600;font-size:.85rem}
+.mk-local-cta{margin:20px 0 0}
+.mk-local-points{list-style:none;margin:0;padding:20px;background:var(--tint);border-radius:14px;display:grid;gap:12px;align-content:start}
+.mk-local-points li{display:flex;gap:10px;align-items:flex-start;font-weight:500}
+.mk-local-points svg{flex:none;width:20px;height:20px;margin-top:.3em;color:var(--palm);stroke:currentColor;fill:none;stroke-width:2.2}
+@media (min-width:900px){.mk-local{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:44px;padding:44px 48px 44px 52px}}

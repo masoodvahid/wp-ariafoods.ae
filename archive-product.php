@@ -11,7 +11,7 @@ get_header();
 $is_tax = is_tax( 'product_cat' );
 $term   = $is_tax ? get_queried_object() : null;
 $title  = $is_tax ? $term->name : __( 'Iranian dates and date ingredients', 'aria' );
-$lead   = $is_tax && $term->description ? wp_strip_all_tags( $term->description ) : __( 'Specifications for every variety and ingredient we export. Bulk, food service and private label; LCL from 1 ton to full containers.', 'aria' );
+$lead   = $is_tax && $term->description ? wp_strip_all_tags( $term->description ) : __( 'Specifications for every variety and ingredient we export. Bulk, food service and private label; Full containers only, from one 20 ft container.', 'aria' );
 if ( $is_tax && ! $term->description ) {
 	$lead = 'dates' === $term->slug
 		? __( 'Nine Iranian date varieties with moisture, size, harvest and shelf-life data – packed in bulk cartons, bags or private label.', 'aria' )
