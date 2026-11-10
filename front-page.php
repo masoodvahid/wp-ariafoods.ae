@@ -16,7 +16,6 @@ get_header();
 $prod = function ( $slug ) {
 	return get_page_by_path( $slug, OBJECT, 'product' );
 };
-$ticket = array_filter( array_map( $prod, array( 'date-syrup', 'mazafati-dates', 'piarom-dates', 'zahedi-dates', 'sayer-dates', 'date-paste' ) ) );
 $syrup  = $prod( 'date-syrup' );
 $hero   = aria_opt( 'hero_image' );
 $pics   = (string) aria_opt( 'hero_products' );
@@ -25,57 +24,29 @@ if ( $pics && 0 === strpos( $pics, '/' ) ) {
 }
 ?>
 
-<section class="hero<?php echo $pics ? ' hero--products' : ''; ?>" aria-labelledby="hero-title">
+<section class="hero<?php echo $pics ? ' hero--visual' : ''; ?>" aria-labelledby="hero-title">
 	<div class="wrap hero-grid">
 		<div class="hero-copy">
 			<h1 id="hero-title"><?php esc_html_e( 'Iranian dates and date syrup, supplied by the container', 'aria' ); ?></h1>
+			<?php if ( ! $pics ) : ?>
 			<p class="hero-lead"><?php esc_html_e( 'Nine date varieties and five date ingredients for importers, wholesalers and food manufacturers – packed in bulk or under your own label, shipped by the full container – from one 20 ft to multi-container orders.', 'aria' ); ?></p>
 			<div class="hero-ctas">
 				<a class="btn btn--primary btn--lg" href="#quote" data-quote-open><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
 				<a class="btn btn--ghost-light btn--lg" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?> <?php esc_html_e( 'WhatsApp the trade desk', 'aria' ); ?></a>
 			</div>
+			<?php endif; ?>
 			<ul class="hero-proof">
 				<li>ISO 9001</li><li>ISO 22000</li><li>HACCP</li><li><?php esc_html_e( 'Exporting to five continents', 'aria' ); ?></li>
 			</ul>
 		</div>
 
-		<?php if ( $ticket ) : ?>
-		<div class="ticket" data-tabs>
-			<p class="ticket-head"><?php esc_html_e( 'Specification finder', 'aria' ); ?></p>
-			<div class="ticket-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Products', 'aria' ); ?>">
-				<?php foreach ( array_values( $ticket ) as $i => $t ) : ?>
-					<button role="tab" type="button" id="tk-tab-<?php echo (int) $i; ?>" aria-controls="tk-<?php echo (int) $i; ?>" aria-selected="<?php echo 0 === $i ? 'true' : 'false'; ?>" tabindex="<?php echo 0 === $i ? '0' : '-1'; ?>"><?php echo esc_html( preg_replace( '/ dates$/i', '', get_the_title( $t ) ) ); ?></button>
-				<?php endforeach; ?>
-			</div>
-			<?php
-			foreach ( array_values( $ticket ) as $i => $t ) :
-				$rows = array_slice( array_values( array_filter( aria_specs( $t->ID ), function ( $r ) {
-					return ! preg_match( '/persian|other names|^date name|^product$|origin|texture|taste|stability|production/i', $r[0] );
-				} ) ), 0, 5 );
-				$pack = aria_meta_lines( $t->ID, '_aria_packing' );
-				?>
-				<div class="ticket-panel" role="tabpanel" id="tk-<?php echo (int) $i; ?>" aria-labelledby="tk-tab-<?php echo (int) $i; ?>" <?php echo 0 === $i ? '' : 'hidden'; ?>>
-					<h2 class="ticket-title"><?php echo esc_html( get_the_title( $t ) ); ?></h2>
-					<dl class="ticket-rows">
-						<?php foreach ( $rows as $r ) : ?>
-							<div><dt><?php echo esc_html( $r[0] ); ?></dt><dd><?php echo esc_html( $r[1] ); ?></dd></div>
-						<?php endforeach; ?>
-						<?php if ( $pack ) : ?>
-							<div><dt><?php esc_html_e( 'Packing', 'aria' ); ?></dt><dd><?php echo esc_html( implode( '; ', array_slice( $pack, 0, 2 ) ) ); ?></dd></div>
-						<?php endif; ?>
-					</dl>
-					<div class="ticket-actions">
-						<a class="btn btn--primary" href="#quote" data-product="<?php echo esc_attr( get_the_title( $t ) ); ?>"><?php esc_html_e( 'Quote this product', 'aria' ); ?></a>
-						<a class="link-more" href="<?php echo esc_url( get_permalink( $t ) ); ?>"><?php esc_html_e( 'Full specification', 'aria' ); ?></a>
-					</div>
-				</div>
-			<?php endforeach; ?>
+		<?php if ( $pics ) : ?>
+		<div class="hero-visual">
+			<img src="<?php echo esc_url( $pics ); ?>" alt="<?php esc_attr_e( 'Aria Foods range: date syrup, date paste, Mazafati and Piarom dates, gift boxes and bulk packs', 'aria' ); ?>" width="1774" height="887" fetchpriority="high" decoding="async">
 		</div>
 		<?php endif; ?>
 	</div>
-	<?php if ( $pics ) : ?>
-		<div class="hero-products" aria-hidden="true"><img src="<?php echo esc_url( $pics ); ?>" alt="" width="1774" height="887" fetchpriority="high" decoding="async"></div>
-	<?php elseif ( $hero ) : ?>
+	<?php if ( ! $pics && $hero ) : ?>
 		<picture class="hero-photo"><source media="(max-width: 899px)" srcset="data:image/gif;base64,R0lGODlhAQABAAAAACw="><img src="<?php echo esc_url( $hero ); ?>" alt="" fetchpriority="high" decoding="async"></picture>
 	<?php endif; ?>
 </section>
