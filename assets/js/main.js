@@ -68,7 +68,8 @@
 
 	/* ---------- Quote pop-up (floating button) ---------- */
 	var qm = $('#quote-modal'), qmTimer = null, qmLast = null;
-	function qmOpen(product) {
+	function qmOpen(product, port) {
+		if (qm && port) { var pf = qm.querySelector('input[name=port]'); if (pf && !pf.value) pf.value = port; }
 		if (!qm || typeof qm.showModal !== 'function') return false;
 		clearTimeout(qmTimer);
 		qmLast = document.activeElement;
@@ -92,7 +93,7 @@
 	d.addEventListener('click', function (e) {
 		var o = e.target.closest('[data-quote-open]');
 		if (o && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
-			if (qmOpen(o.getAttribute('data-product') || (d.body.classList.contains('single-product') ? (($('.prod-title') || $('h1') || {}).textContent || '').trim() : ''))) e.preventDefault();
+			if (qmOpen(o.getAttribute('data-product') || (d.body.classList.contains('single-product') ? (($('.prod-title') || $('h1') || {}).textContent || '').trim() : ''), o.getAttribute('data-port'))) e.preventDefault();
 			return;
 		}
 		if (e.target.closest('[data-quote-close]') || e.target === qm) qmClose();

@@ -24,6 +24,7 @@ require ARIA_DIR . '/inc/security.php';
 require ARIA_DIR . '/inc/fonts.php';
 require ARIA_DIR . '/inc/media.php';
 require ARIA_DIR . '/inc/analytics.php';
+require ARIA_DIR . '/inc/export-markets.php';
 
 if ( is_admin() || wp_doing_cron() ) {
 	require ARIA_DIR . '/inc/updater.php';

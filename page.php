@@ -18,6 +18,15 @@ while ( have_posts() ) :
 	$slug    = get_post_field( 'post_name', $id );
 	$lead    = has_excerpt() ? get_the_excerpt() : '';
 
+	if ( 'export' === $slug && ! wp_get_post_parent_id( get_the_ID() ) ) {
+		require ARIA_DIR . '/parts/export-hub.php';
+		continue;
+	}
+	if ( aria_export_market_slug() ) {
+		require ARIA_DIR . '/parts/export-market.php';
+		continue;
+	}
+
 	aria_page_head( get_the_title(), $lead );
 
 	if ( 'quote' === $form && in_array( $slug, array( 'ariafoods-bulk-service', 'customer-packing', 'ariafoods-dates-catalogue' ), true ) ) :
