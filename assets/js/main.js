@@ -373,3 +373,23 @@
 	});
 	history.scrollRestoration = 'manual';
 })();
+
+/* Certificate viewer: open certificate images in a light box instead of a new tab. */
+(function(){
+	if(typeof HTMLDialogElement!=='function'){return;}
+	var dlg=null,img=null;
+	document.addEventListener('click',function(e){
+		var a=e.target.closest&&e.target.closest('a[data-cert-view]');
+		if(!a||e.ctrlKey||e.metaKey||e.shiftKey){return;}
+		e.preventDefault();
+		if(!dlg){
+			dlg=document.createElement('dialog');dlg.className='cview';
+			dlg.innerHTML='<button type="button" class="cview-close" aria-label="Close">&times;</button><img alt="">';
+			document.body.appendChild(dlg);img=dlg.querySelector('img');
+			dlg.addEventListener('click',function(ev){if(ev.target===dlg||ev.target.classList.contains('cview-close')){dlg.close();}});
+		}
+		var t=a.querySelector('img');img.src=a.href;img.alt=t?t.alt:'';
+		dlg.showModal();
+	});
+})();
+

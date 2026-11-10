@@ -101,7 +101,18 @@ function aria_contact_list( $class = 'contact-list' ) {
 function aria_cert_row() {
 	echo '<ul class="certs">';
 	foreach ( aria_certs() as $c ) {
-		echo '<li><a href="' . esc_url( $c[2] ) . '" target="_blank" rel="noopener">' . aria_icon( 'shield' ) . '<span><strong>' . esc_html( $c[0] ) . '</strong>' . esc_html( $c[1] ) . '</span></a></li>'; // phpcs:ignore
+		$url   = (string) $c[2];
+		$is_im = (bool) preg_match( '/\.(jpe?g|png|webp)(\?.*)?$/i', $url );
+		$thumb = '';
+		if ( $is_im ) {
+			$t     = preg_replace( '/(\.jpe?g)$/i', '-thumb$1', $url );
+			$local = ARIA_DIR . '/assets/certs/' . basename( (string) $t );
+			$thumb = ( 0 === strpos( $url, ARIA_URI ) && file_exists( $local ) ) ? $t : $url;
+		}
+		$media = $thumb
+			? '<img class="cert-thumb" src="' . esc_url( $thumb ) . '" alt="' . esc_attr( sprintf( __( 'Aria Foods %s certificate', 'aria' ), $c[0] ) ) . '" width="60" height="84" loading="lazy" decoding="async">'
+			: aria_icon( 'shield' );
+		echo '<li><a href="' . esc_url( $url ) . '" target="_blank" rel="noopener"' . ( $is_im ? ' data-cert-view' : '' ) . '>' . $media . '<span><strong>' . esc_html( $c[0] ) . '</strong>' . esc_html( $c[1] ) . '</span></a></li>'; // phpcs:ignore
 	}
 	echo '</ul>';
 }

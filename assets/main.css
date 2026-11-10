@@ -335,9 +335,8 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 .faq details p{margin:0 0 18px;color:var(--muted);max-width:68ch}
 
 /* Certificates */
-.certs{list-style:none;padding:0;margin:0;display:grid;gap:10px}
-@media (min-width:700px){.certs{grid-template-columns:repeat(3,1fr)}}
-.certs a{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);text-decoration:none;color:var(--text);background:var(--surface)}
+.certs{list-style:none;padding:0;margin:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.certs a{display:flex;gap:14px;align-items:center;padding:10px 14px 10px 10px;border:1px solid var(--line);border-radius:var(--radius);text-decoration:none;color:var(--text);background:var(--surface)}
 .certs a:hover{border-color:var(--palm)}
 .certs .icon{width:28px;height:28px;color:var(--palm)}
 .certs strong{display:block;}
@@ -506,7 +505,8 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 .contact-list--foot a,.contact-list--foot .contact-static{padding:6px 0}
 .foot-certs{display:grid;gap:18px;margin-top:40px;padding-top:28px;border-top:1px solid rgba(255,255,255,.1)}
 @media (min-width:900px){.foot-certs{grid-template-columns:1fr auto;align-items:center}}
-.site-foot .certs a{background:transparent;border-color:rgba(255,255,255,.14)}
+.site-foot .certs a{display:flex;padding:10px 14px 10px 10px;background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.14)}
+.site-foot .certs a:hover{border-color:var(--gold)}
 .site-foot .certs a strong{color:#fff}
 .site-foot .certs a span{color:#b3a392}
 .site-foot .certs .icon{color:var(--gold)}
@@ -711,3 +711,12 @@ html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:
 .mk-local-points li{display:flex;gap:10px;align-items:flex-start;font-weight:500}
 .mk-local-points svg{flex:none;width:20px;height:20px;margin-top:.3em;color:var(--palm);stroke:currentColor;fill:none;stroke-width:2.2}
 @media (min-width:900px){.mk-local{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:44px;padding:44px 48px 44px 52px}}
+.cert-thumb{flex:none;width:60px;height:84px;object-fit:cover;object-position:top;border-radius:6px;border:1px solid var(--line);background:#fff;box-shadow:0 6px 14px -8px rgba(var(--sh),.5);transition:transform .2s}
+.certs a:hover .cert-thumb{transform:rotate(-2deg) scale(1.04)}
+.site-foot .cert-thumb{border-color:rgba(255,255,255,.18)}
+/* Certificate viewer */
+.cview{border:0;padding:0;background:transparent;max-width:min(92vw,640px);max-height:92vh;overflow:visible}
+.cview::backdrop{background:rgba(20,14,11,.78);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.cview img{display:block;width:100%;height:auto;max-height:88vh;object-fit:contain;border-radius:10px;background:#fff;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+.cview-close{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);font-size:1.4rem;line-height:1;cursor:pointer;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
+@media (max-width:700px){.cview-close{top:8px;right:8px}}
