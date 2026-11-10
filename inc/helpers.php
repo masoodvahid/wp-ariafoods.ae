@@ -31,6 +31,7 @@ function aria_defaults() {
 		'youtube'      => 'https://www.youtube.com/@AriaFoods-co',
 		'telegram'     => 'https://t.me/Ariafoods',
 		'hero_image'   => '',
+		'hero_products' => '/wp-content/uploads/AriaFoods-Date-Product-Collection.webp',
 		'branch_legal' => '',
 		'license_no'   => '',
 		'license_auth' => '',

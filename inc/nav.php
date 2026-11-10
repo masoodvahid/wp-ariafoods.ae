@@ -120,12 +120,84 @@ function aria_mega_products() {
 	return ob_get_clean();
 }
 
+/**
+ * "Export markets" menu: added after Services (or before Insights) unless the menu already links to
+ * /export/. Its submenu lists the country pages under /export/ automatically, so a new country page
+ * appears in the menu as soon as it is published.
+ */
+function aria_export_menu_item() {
+	$hub = get_page_by_path( 'export' );
+	if ( ! $hub || 'publish' !== $hub->post_status ) {
+		return null;
+	}
+	$kids = get_pages( array( 'parent' => $hub->ID, 'sort_column' => 'menu_order,post_title', 'post_status' => 'publish' ) );
+	$children = array();
+	foreach ( $kids as $k ) {
+		$m    = function_exists( 'aria_export_market' ) ? aria_export_market( $k->ID ) : null;
+		$name = $m ? $m['country'] : get_the_title( $k );
+		$desc = '';
+		if ( $m && ! empty( $m['ports'] ) ) {
+			$ports = array_slice( array_filter( array_map( function ( $p ) {
+				return trim( preg_replace( '/\s*\(.*\)$/', '', (string) $p[0] ) );
+			}, $m['ports'] ) ), 0, 3 );
+			$desc = $ports ? sprintf( __( 'Full containers to %s', 'aria' ), implode( ', ', $ports ) ) : '';
+		}
+		$children[] = array(
+			'title' => sprintf( __( 'Dates for %s', 'aria' ), $name ),
+			'url'   => get_permalink( $k ),
+			'desc'  => $desc ? $desc : __( 'Full containers from our Dubai warehouse', 'aria' ),
+		);
+	}
+	$children[] = array(
+		'title' => __( 'All export markets', 'aria' ),
+		'url'   => get_permalink( $hub ),
+		'desc'  => __( 'Shipping, payment and documents by country', 'aria' ),
+	);
+	$path = (string) wp_parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ); // phpcs:ignore
+	return array(
+		'title'    => __( 'Export', 'aria' ),
+		'url'      => get_permalink( $hub ),
+		'classes'  => array( 'export-markets' ),
+		'current'  => 0 === strpos( $path, (string) wp_parse_url( get_permalink( $hub ), PHP_URL_PATH ) ),
+		'children' => $children,
+	);
+}
+
+function aria_nav_with_export( $tree ) {
+	$pos = null;
+	foreach ( $tree as $i => $item ) {
+		$url = (string) $item['url'];
+		if ( in_array( 'export-markets', (array) $item['classes'], true ) || preg_match( '#/export/?$#', $url ) ) {
+			// Menu already has it: keep its place and title, fill the country list automatically.
+			$auto = aria_export_menu_item();
+			if ( $auto ) {
+				$tree[ $i ]['children'] = $auto['children'];
+				$tree[ $i ]['current']  = ! empty( $item['current'] ) || $auto['current'];
+			}
+			return $tree;
+		}
+		if ( null === $pos && preg_match( '/^insights$/i', trim( $item['title'] ) ) ) {
+			$pos = $i;
+		}
+		if ( preg_match( '/^services$/i', trim( $item['title'] ) ) ) {
+			$pos = $i + 1;
+		}
+	}
+	$auto = aria_export_menu_item();
+	if ( ! $auto ) {
+		return $tree;
+	}
+	array_splice( $tree, null === $pos ? count( $tree ) : $pos, 0, array( $auto ) );
+	return array_values( $tree );
+}
+
 /** Render primary navigation. */
 function aria_primary_nav() {
 	$tree = aria_menu_tree( 'primary' );
 	if ( null === $tree ) {
 		$tree = aria_default_menu();
 	}
+	$tree      = aria_nav_with_export( $tree );
 	$mega_html = null;
 	echo '<ul class="nav-list">';
 	foreach ( $tree as $i => $item ) {

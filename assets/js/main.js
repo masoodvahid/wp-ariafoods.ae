@@ -93,6 +93,7 @@
 	d.addEventListener('click', function (e) {
 		var o = e.target.closest('[data-quote-open]');
 		if (o && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+			if (body.classList.contains('nav-open') && typeof closeMenu === 'function') closeMenu();
 			if (qmOpen(o.getAttribute('data-product') || (d.body.classList.contains('single-product') ? (($('.prod-title') || $('h1') || {}).textContent || '').trim() : ''), o.getAttribute('data-port'))) e.preventDefault();
 			return;
 		}

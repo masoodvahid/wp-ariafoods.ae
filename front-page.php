@@ -19,15 +19,19 @@ $prod = function ( $slug ) {
 $ticket = array_filter( array_map( $prod, array( 'date-syrup', 'mazafati-dates', 'piarom-dates', 'zahedi-dates', 'sayer-dates', 'date-paste' ) ) );
 $syrup  = $prod( 'date-syrup' );
 $hero   = aria_opt( 'hero_image' );
+$pics   = (string) aria_opt( 'hero_products' );
+if ( $pics && 0 === strpos( $pics, '/' ) ) {
+	$pics = home_url( $pics );
+}
 ?>
 
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero<?php echo $pics ? ' hero--products' : ''; ?>" aria-labelledby="hero-title">
 	<div class="wrap hero-grid">
 		<div class="hero-copy">
 			<h1 id="hero-title"><?php esc_html_e( 'Iranian dates and date syrup, supplied by the container', 'aria' ); ?></h1>
 			<p class="hero-lead"><?php esc_html_e( 'Nine date varieties and five date ingredients for importers, wholesalers and food manufacturers – packed in bulk or under your own label, shipped by the full container – from one 20 ft to multi-container orders.', 'aria' ); ?></p>
 			<div class="hero-ctas">
-				<a class="btn btn--primary btn--lg" href="#quote"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
+				<a class="btn btn--primary btn--lg" href="#quote" data-quote-open><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
 				<a class="btn btn--ghost-light btn--lg" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?> <?php esc_html_e( 'WhatsApp the trade desk', 'aria' ); ?></a>
 			</div>
 			<ul class="hero-proof">
@@ -69,7 +73,9 @@ $hero   = aria_opt( 'hero_image' );
 		</div>
 		<?php endif; ?>
 	</div>
-	<?php if ( $hero ) : ?>
+	<?php if ( $pics ) : ?>
+		<div class="hero-products" aria-hidden="true"><img src="<?php echo esc_url( $pics ); ?>" alt="" width="1774" height="887" fetchpriority="high" decoding="async"></div>
+	<?php elseif ( $hero ) : ?>
 		<picture class="hero-photo"><source media="(max-width: 899px)" srcset="data:image/gif;base64,R0lGODlhAQABAAAAACw="><img src="<?php echo esc_url( $hero ); ?>" alt="" fetchpriority="high" decoding="async"></picture>
 	<?php endif; ?>
 </section>

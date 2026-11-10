@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
 		<nav class="nav" id="site-nav" aria-label="<?php esc_attr_e( 'Main', 'aria' ); ?>">
 			<?php aria_primary_nav(); ?>
 			<div class="nav-extra">
-				<a class="btn btn--primary" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
+				<a class="btn btn--primary" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>" data-quote-open><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
 				<a class="btn btn--outline nav-account" href="<?php echo esc_url( aria_account_url() ); ?>"><?php echo aria_icon( 'user' ); // phpcs:ignore ?> <?php echo is_user_logged_in() ? esc_html__( 'My account', 'aria' ) : esc_html__( 'Sign in / register', 'aria' ); ?></a>
 				<?php aria_contact_list( 'contact-list contact-list--nav' ); ?>
 			</div>
@@ -42,7 +42,7 @@ defined( 'ABSPATH' ) || exit;
 			</div>
 			<a class="icon-btn icon-btn--wa" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener" aria-label="<?php esc_attr_e( 'WhatsApp the trade desk', 'aria' ); ?>"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?></a>
 			<a class="icon-btn head-account" href="<?php echo esc_url( aria_account_url() ); ?>" aria-label="<?php echo is_user_logged_in() ? esc_attr__( 'My account', 'aria' ) : esc_attr__( 'Sign in or create an account', 'aria' ); ?>"><?php echo aria_icon( 'user' ); // phpcs:ignore ?></a>
-			<a class="btn btn--primary head-cta" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
+			<a class="btn btn--primary head-cta" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>" data-quote-open><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
 			<button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="screen-reader-text"><?php esc_html_e( 'Menu', 'aria' ); ?></span><?php echo aria_icon( 'menu', 'icon i-open' ) . aria_icon( 'close', 'icon i-close' ); // phpcs:ignore ?></button>
 		</div>
 	</div>
