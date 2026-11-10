@@ -22,6 +22,8 @@ require ARIA_DIR . '/inc/account.php';
 require ARIA_DIR . '/inc/seo.php';
 require ARIA_DIR . '/inc/security.php';
 require ARIA_DIR . '/inc/fonts.php';
+require ARIA_DIR . '/inc/media.php';
+require ARIA_DIR . '/inc/analytics.php';
 
 if ( is_admin() || wp_doing_cron() ) {
 	require ARIA_DIR . '/inc/updater.php';
@@ -31,6 +33,7 @@ if ( is_admin() ) {
 	require ARIA_DIR . '/inc/importer.php';
 	require ARIA_DIR . '/inc/migrate.php';
 	require ARIA_DIR . '/inc/domain.php';
+	require ARIA_DIR . '/inc/seo-fixes.php';
 }
 
 add_action( 'after_setup_theme', function () {

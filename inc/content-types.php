@@ -113,6 +113,12 @@ add_action( 'template_redirect', function () {
 		'export/premium-date-syrup' => 'product/date-syrup',
 		'online-inquiry'    => 'get-a-quote',
 		'contact-us/about'  => 'about-us',
+		'exclusive-packaging-options'   => 'customer-packing',
+		'iranian-mazafati-dates-fruit'  => 'product/mazafati-dates',
+		'import/rice'                   => 'dates-products',
+		'articles/introduction-letter'  => 'about-us',
+		'newsletters/online-services-oct2019' => 'news',
+		'cataloge/ingredients-2025'     => 'ariafoods-dates-catalogue',
 	);
 	if ( isset( $map[ $path ] ) ) {
 		wp_safe_redirect( home_url( '/' . $map[ $path ] . '/' ), 301 );

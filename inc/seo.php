@@ -133,6 +133,10 @@ add_filter( 'wp_robots', function ( $robots ) {
 		$robots['follow']  = true;
 	} elseif ( is_singular() && get_post_meta( get_queried_object_id(), '_aria_noindex', true ) ) {
 		$robots['noindex'] = true;
+	} elseif ( is_category() || is_tag() || is_author() || is_date() ) {
+		// Blog archives only list articles that belong to ariafoods.co (canonical there): keep them out of Google.
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
 	} elseif ( ! get_option( 'blog_public' ) ) {
 		return $robots;
 	} else {
@@ -462,7 +466,7 @@ add_filter( 'wp_sitemaps_posts_show_on_front_entry', function ( $entry ) {
 } );
 
 add_filter( 'wp_sitemaps_taxonomies', function ( $tax ) {
-	unset( $tax['post_tag'], $tax['post_format'] );
+	unset( $tax['post_tag'], $tax['post_format'], $tax['category'] );
 	return $tax;
 } );
 

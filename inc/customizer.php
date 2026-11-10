@@ -36,6 +36,8 @@ add_action( 'customize_register', function ( WP_Customize_Manager $wp ) {
 				'cert_haccp'    => array( __( 'HACCP certificate URL', 'aria' ), 'url' ),
 				'hero_image'    => array( __( 'Home hero image URL', 'aria' ), 'url' ),
 				'shorts'        => array( __( 'YouTube Shorts IDs (comma separated)', 'aria' ), 'textarea' ),
+				'cf_beacon'     => array( __( 'Cloudflare Web Analytics token (leave empty if Cloudflare adds it automatically)', 'aria' ), 'text' ),
+				'ga4_id'        => array( __( 'Google Analytics 4 measurement ID (G-…)', 'aria' ), 'text' ),
 			),
 		),
 		'aria_branch'  => array(
