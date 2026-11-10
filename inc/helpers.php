@@ -226,9 +226,9 @@ function aria_read_time( $post_id = null ) {
 /** Certificates list for trust rows. */
 function aria_certs() {
 	return array(
-		array( 'ISO 9001', __( 'Quality management', 'aria' ), aria_opt( 'cert_iso9001' ) ),
-		array( 'ISO 22000', __( 'Food safety management', 'aria' ), aria_opt( 'cert_iso22000' ) ),
-		array( 'HACCP', __( 'Hazard analysis and critical control points', 'aria' ), aria_opt( 'cert_haccp' ) ),
+		array( 'ISO 9001', __( 'Quality management – valid to Aug 2029', 'aria' ), aria_cert_url( 'cert_iso9001', 'aria-foods-iso-9001-2015-certificate.jpg' ) ),
+		array( 'ISO 22000', __( 'Food safety management – valid to Aug 2029', 'aria' ), aria_cert_url( 'cert_iso22000', 'aria-foods-iso-22000-2018-certificate.jpg' ) ),
+		array( 'HACCP', __( 'Hazard analysis and critical control points – valid to Aug 2029', 'aria' ), aria_cert_url( 'cert_haccp', 'aria-foods-haccp-certificate.jpg' ) ),
 	);
 }
 
@@ -342,3 +342,18 @@ add_filter( 'wp_mail_from', function ( $from ) {
 add_filter( 'wp_mail_from_name', function ( $name ) {
 	return 'WordPress' === $name ? aria_opt( 'company' ) : $name;
 } );
+
+/**
+ * Certificate link: the current certificate shipped with the theme (assets/certs/), unless the
+ * Customizer holds a link to a newer file uploaded to the Media Library.
+ */
+function aria_cert_url( $key, $file ) {
+	$opt = (string) aria_opt( $key );
+	if ( $opt && 0 === strpos( $opt, content_url( '/uploads/' ) ) ) { // A newer file uploaded to this site wins.
+		return $opt;
+	}
+	if ( file_exists( ARIA_DIR . '/assets/certs/' . $file ) ) {
+		return ARIA_URI . '/assets/certs/' . $file;
+	}
+	return $opt;
+}
