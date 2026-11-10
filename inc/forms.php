@@ -139,7 +139,7 @@ function aria_handle_inquiry() {
 	}
 
 	// Rate limit: 6 submissions per IP per hour.
-	$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	$ip  = function_exists( 'aria_client_ip' ) ? aria_client_ip() : ( isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '' );
 	$key = 'aria_rl_' . md5( $ip );
 	$hit = (int) get_transient( $key );
 	if ( $hit >= 6 ) {

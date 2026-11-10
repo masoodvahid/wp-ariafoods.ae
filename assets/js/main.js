@@ -35,15 +35,38 @@
 		if (body.classList.contains('nav-open')) { closeMenu(); menuBtn.focus(); }
 	});
 
-	/* ---------- Mobile action dock ---------- */
-	var dock = $('.dock'), ticking = false;
-	function onScroll() {
-		if (!dock) return;
-		var show = window.scrollY > 480;
-		dock.classList.toggle('is-on', show);
-		ticking = false;
+	/* ---------- Quote pop-up (floating button) ---------- */
+	var qm = $('#quote-modal'), qmTimer = null, qmLast = null;
+	function qmOpen(product) {
+		if (!qm || typeof qm.showModal !== 'function') return false;
+		clearTimeout(qmTimer);
+		qmLast = document.activeElement;
+		if (product) {
+			var sel = qm.querySelector('select[name=product]');
+			if (sel) { for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].text === product || sel.options[i].value === product) { sel.selectedIndex = i; break; } } }
+		}
+		if (!qm.open) qm.showModal();
+		document.documentElement.classList.add('qmodal-on');
+		requestAnimationFrame(function () { requestAnimationFrame(function () { qm.classList.add('is-open'); }); });
+		var first = qm.querySelector('input:not([type=hidden]):not([tabindex="-1"])');
+		if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 60);
+		return true;
 	}
-	window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+	function qmClose() {
+		if (!qm || !qm.open) return;
+		qm.classList.remove('is-open');
+		document.documentElement.classList.remove('qmodal-on');
+		qmTimer = setTimeout(function () { qm.close(); if (qmLast && qmLast.focus) qmLast.focus({ preventScroll: true }); }, 320);
+	}
+	d.addEventListener('click', function (e) {
+		var o = e.target.closest('[data-quote-open]');
+		if (o && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+			if (qmOpen(o.getAttribute('data-product') || (d.body.classList.contains('single-product') ? (($('.prod-title') || $('h1') || {}).textContent || '').trim() : ''))) e.preventDefault();
+			return;
+		}
+		if (e.target.closest('[data-quote-close]') || e.target === qm) qmClose();
+	});
+	if (qm) qm.addEventListener('cancel', function (e) { e.preventDefault(); qmClose(); });
 
 	/* ---------- Page modules (re-run after every instant navigation) ---------- */
 	function initTabs(scope) {

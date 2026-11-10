@@ -72,10 +72,19 @@ $p = function ( $s ) {
 		<p><?php esc_html_e( 'Wholesale and export only.', 'aria' ); ?></p>
 	</div>
 </footer>
-<nav class="dock" aria-label="<?php esc_attr_e( 'Quick contact', 'aria' ); ?>">
-	<a class="dock-wa" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?> WhatsApp</a>
-	<a class="dock-quote" href="<?php echo esc_url( $p( 'get-a-quote' ) ); ?>"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
-</nav>
+<div class="fab" aria-label="<?php esc_attr_e( 'Quick contact', 'aria' ); ?>" role="group">
+	<a class="fab-btn fab-wa" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener" aria-label="<?php esc_attr_e( 'Chat with our trade desk on WhatsApp', 'aria' ); ?>"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?><span class="fab-tip"><?php esc_html_e( 'WhatsApp', 'aria' ); ?></span></a>
+	<a class="fab-btn fab-quote" href="<?php echo esc_url( $p( 'get-a-quote' ) ); ?>" data-quote-open aria-haspopup="dialog"><?php echo aria_icon( 'doc' ); // phpcs:ignore ?><span><?php esc_html_e( 'Request a quote', 'aria' ); ?></span></a>
+</div>
+<dialog class="qmodal" id="quote-modal" aria-labelledby="qm-title">
+	<div class="qmodal-box">
+		<button class="qmodal-close" type="button" data-quote-close aria-label="<?php esc_attr_e( 'Close', 'aria' ); ?>"><?php echo aria_icon( 'close' ); // phpcs:ignore ?></button>
+		<p class="kicker"><?php esc_html_e( 'Wholesale & export only', 'aria' ); ?></p>
+		<h2 class="qmodal-title" id="qm-title"><?php esc_html_e( 'Request a quote', 'aria' ); ?></h2>
+		<p class="qmodal-lead"><?php esc_html_e( 'Tell us the product, quantity and destination port. Our trade desk replies within one working day with price and shipping options.', 'aria' ); ?></p>
+		<?php echo aria_form( 'quote', array( 'id' => 'modal-quote' ) ); // phpcs:ignore ?>
+	</div>
+</dialog>
 <?php wp_footer(); ?>
 </body>
 </html>

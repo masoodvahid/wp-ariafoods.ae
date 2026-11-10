@@ -28,7 +28,7 @@ add_filter( 'image_editor_output_format', function ( $formats ) {
 } );
 
 add_filter( 'wp_editor_set_quality', function ( $q, $mime ) {
-	return 'image/webp' === $mime ? 80 : $q;
+	return 'image/webp' === $mime ? 90 : $q;
 }, 10, 2 );
 
 if ( ! is_admin() ) {
@@ -46,7 +46,7 @@ function aria_images_todo( $limit = 0 ) {
 		"SELECT p.ID FROM {$wpdb->posts} p
 		 JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = '_wp_attachment_metadata'
 		 WHERE p.post_type = 'attachment' AND p.post_mime_type IN ('image/jpeg','image/png')
-		 AND m.meta_value NOT LIKE '%image/webp%'
+		 AND m.meta_value NOT LIKE '%aria_q90%'
 		 ORDER BY p.ID DESC" . ( $limit ? ' LIMIT ' . (int) $limit : '' )
 	);
 	return array_map( 'intval', $ids );
@@ -103,7 +103,7 @@ add_action( 'wp_ajax_aria_img_batch', function () {
 		if ( ! $file || ! file_exists( $file ) ) {
 			// Mark so it is not picked again.
 			$old              = is_array( $old ) ? $old : array();
-			$old['aria_skip'] = 'image/webp-missing-file';
+			$old['aria_skip'] = 'aria_q90-missing-file';
 			wp_update_attachment_metadata( $id, $old );
 			++$errors;
 			continue;
@@ -118,7 +118,7 @@ add_action( 'wp_ajax_aria_img_batch', function () {
 		$meta = wp_generate_attachment_metadata( $id, $file );
 		if ( is_wp_error( $meta ) || empty( $meta ) ) {
 			$old              = is_array( $old ) ? $old : array();
-			$old['aria_skip'] = 'image/webp-failed';
+			$old['aria_skip'] = 'aria_q90-failed';
 			wp_update_attachment_metadata( $id, $old );
 			++$errors;
 			continue;
@@ -130,8 +130,9 @@ add_action( 'wp_ajax_aria_img_batch', function () {
 				$after += file_exists( $p ) ? filesize( $p ) : 0;
 			}
 		} else {
-			$meta['aria_skip'] = 'image/webp-no-sizes'; // Small image: nothing to resize.
+			$meta['aria_skip'] = 'no-sizes'; // Small image: nothing to resize.
 		}
+		$meta['aria_q'] = 'aria_q90';
 		wp_update_attachment_metadata( $id, $meta );
 		$saved += max( 0, $before - $after );
 		++$done;
