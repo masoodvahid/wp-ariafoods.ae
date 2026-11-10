@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>document.documentElement.classList.add('js')</script>
+<script>(function(d){d.classList.add('js');var t='light';try{t=localStorage.getItem('aria-theme')||'light'}catch(e){}d.setAttribute('data-theme',t==='dark'||t==='system'?t:'light')})(document.documentElement)</script>
 <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
@@ -31,6 +31,14 @@ defined( 'ABSPATH' ) || exit;
 			</div>
 		</nav>
 		<div class="head-actions">
+			<div class="theme-pick">
+				<button class="icon-btn theme-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu" aria-label="<?php esc_attr_e( 'Colour theme', 'aria' ); ?>" title="<?php esc_attr_e( 'Colour theme', 'aria' ); ?>"><?php echo aria_icon( 'sun', 'icon t-ic t-light' ) . aria_icon( 'moon', 'icon t-ic t-dark' ) . aria_icon( 'monitor', 'icon t-ic t-system' ); // phpcs:ignore ?></button>
+				<div class="theme-menu" id="theme-menu" role="menu" aria-label="<?php esc_attr_e( 'Colour theme', 'aria' ); ?>">
+					<button type="button" role="menuitemradio" data-set-theme="light"><?php echo aria_icon( 'sun' ); // phpcs:ignore ?><?php esc_html_e( 'Light', 'aria' ); ?></button>
+					<button type="button" role="menuitemradio" data-set-theme="dark"><?php echo aria_icon( 'moon' ); // phpcs:ignore ?><?php esc_html_e( 'Dark', 'aria' ); ?></button>
+					<button type="button" role="menuitemradio" data-set-theme="system"><?php echo aria_icon( 'monitor' ); // phpcs:ignore ?><?php esc_html_e( 'System', 'aria' ); ?></button>
+				</div>
+			</div>
 			<a class="icon-btn icon-btn--wa" href="<?php echo esc_url( aria_wa_url( 'Hello Aria Foods, I would like a wholesale quote.' ) ); ?>" target="_blank" rel="noopener" aria-label="<?php esc_attr_e( 'WhatsApp the trade desk', 'aria' ); ?>"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?></a>
 			<a class="icon-btn" href="<?php echo esc_url( aria_account_url() ); ?>" aria-label="<?php echo is_user_logged_in() ? esc_attr__( 'My account', 'aria' ) : esc_attr__( 'Sign in or create an account', 'aria' ); ?>"><?php echo aria_icon( 'user' ); // phpcs:ignore ?></a>
 			<a class="btn btn--primary head-cta" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
