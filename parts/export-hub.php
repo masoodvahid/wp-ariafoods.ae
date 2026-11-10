@@ -21,9 +21,23 @@ aria_page_head( get_the_title(), has_excerpt() ? get_the_excerpt() : '' );
 					$cn = $mk ? $mk['country'] : $k->post_title;
 					?>
 					<a class="seg" href="<?php echo esc_url( get_permalink( $k ) ); ?>">
-						<?php echo aria_icon( 'globe' ); // phpcs:ignore ?>
+						<?php
+						$fl = ( $mk && ! empty( $mk['flag'] ) ) ? array_values( array_filter( (array) $mk['flag'], function ( $c ) {
+							return (bool) preg_match( '/^#[0-9a-f]{3,8}$/i', $c );
+						} ) ) : array();
+						if ( $fl ) {
+							$stops = array();
+							$n     = count( $fl );
+							foreach ( $fl as $i => $col ) {
+								$stops[] = $col . ' ' . round( $i * 100 / $n, 2 ) . '% ' . round( ( $i + 1 ) * 100 / $n, 2 ) . '%';
+							}
+							echo '<span class="mk-hub-flag" aria-hidden="true" style="background:linear-gradient(' . esc_attr( implode( ',', $stops ) ) . ')"></span>';
+						} else {
+							echo aria_icon( 'globe' ); // phpcs:ignore
+						}
+						?>
 						<h3><?php echo esc_html( $cn ); ?></h3>
-						<p><?php echo esc_html( wp_trim_words( $k->post_excerpt, 26 ) ); ?></p>
+						<p><?php echo esc_html( wp_trim_words( rtrim( $k->post_excerpt, '. ' ), 22 ) ); ?></p>
 						<span class="link-more"><?php echo esc_html( sprintf( __( 'Dates for %s', 'aria' ), $cn ) ); ?></span>
 					</a>
 				<?php endforeach; ?>

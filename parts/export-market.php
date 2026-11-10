@@ -14,6 +14,9 @@ $c     = $m['country'];
 $port0 = $m['ports'][0][0];
 $wa    = aria_wa_url( sprintf( 'Hello Aria Foods, I am an importer in %s and would like a price for a container of Iranian dates.', $c ) );
 $faq   = aria_faq_items( get_the_ID() );
+$sea   = 'sea' === $m['mode'];
+$road  = 'road' === $m['mode'];
+$tshort = $m['transit_short'] ? $m['transit_short'] : __( 'Ask for the current schedule', 'aria' );
 ?>
 <section class="hero hero--market" aria-labelledby="mk-title">
 	<?php echo aria_export_flag( $m ); // phpcs:ignore -- built from validated colours. ?>
@@ -37,16 +40,16 @@ $faq   = aria_faq_items( get_the_ID() );
 		<div class="ticket ship-card">
 			<p class="ticket-head"><?php esc_html_e( 'Your shipment', 'aria' ); ?></p>
 			<div class="route">
-				<div><small><?php esc_html_e( 'Loaded at', 'aria' ); ?></small><strong>Jebel Ali, Dubai</strong></div>
-				<span class="route-line" aria-hidden="true"><?php echo aria_icon( 'ship' ); // phpcs:ignore ?></span>
+				<div><small><?php esc_html_e( 'Loaded at', 'aria' ); ?></small><strong><?php echo $road ? esc_html__( 'Dubai warehouse', 'aria' ) : 'Jebel Ali, Dubai'; ?></strong></div>
+				<span class="route-line" aria-hidden="true"><?php echo aria_icon( $road ? 'truck' : 'ship' ); // phpcs:ignore ?></span>
 				<div><small><?php esc_html_e( 'Delivered to', 'aria' ); ?></small><strong><?php echo esc_html( $port0 ); ?></strong></div>
 			</div>
 			<dl class="ticket-rows">
-				<div><dt><?php esc_html_e( 'Minimum order', 'aria' ); ?></dt><dd><?php esc_html_e( '1 × 20 ft container (up to ~15 t)', 'aria' ); ?></dd></div>
+				<div><dt><?php esc_html_e( 'Minimum order', 'aria' ); ?></dt><dd><?php echo $road ? esc_html__( '1 full truck or 20 ft container (~15 t)', 'aria' ) : esc_html__( '1 × 20 ft container (up to ~15 t)', 'aria' ); ?></dd></div>
 				<div><dt><?php esc_html_e( 'Larger orders', 'aria' ); ?></dt><dd><?php esc_html_e( '40 ft (25 t +), several containers per month', 'aria' ); ?></dd></div>
 				<div><dt><?php esc_html_e( 'Loading', 'aria' ); ?></dt><dd><?php esc_html_e( 'From Dubai stock, within days of payment', 'aria' ); ?></dd></div>
-				<div><dt><?php esc_html_e( 'Sailing time', 'aria' ); ?></dt><dd><?php esc_html_e( 'Usually under a week', 'aria' ); ?></dd></div>
-				<div><dt><?php esc_html_e( 'Terms', 'aria' ); ?></dt><dd><?php echo esc_html( sprintf( __( 'CIF %s or FOB Jebel Ali', 'aria' ), $c ) ); ?></dd></div>
+				<div><dt><?php echo $sea ? esc_html__( 'Sailing time', 'aria' ) : esc_html__( 'Transit time', 'aria' ); ?></dt><dd><?php echo esc_html( $tshort ); ?></dd></div>
+				<div><dt><?php esc_html_e( 'Terms', 'aria' ); ?></dt><dd><?php echo esc_html( $m['terms'] ); ?></dd></div>
 				<div><dt><?php esc_html_e( 'Payment', 'aria' ); ?></dt><dd><?php esc_html_e( 'TT or LC through UAE banks (USD / AED)', 'aria' ); ?></dd></div>
 			</dl>
 			<div class="ticket-actions">
@@ -158,13 +161,14 @@ if ( ! empty( $loc['title'] ) ) :
 				<tbody>
 					<tr><th>20 ft</th><td><?php esc_html_e( 'up to ~15 t', 'aria' ); ?></td><td><?php esc_html_e( 'First orders, one or two varieties', 'aria' ); ?></td></tr>
 					<tr><th>40 ft</th><td><?php esc_html_e( '25 t and more', 'aria' ); ?></td><td><?php esc_html_e( 'Wholesale markets and distributors', 'aria' ); ?></td></tr>
+					<?php if ( $road ) : ?><tr><th><?php esc_html_e( 'Full truck', 'aria' ); ?></th><td><?php esc_html_e( 'similar to 20 ft', 'aria' ); ?></td><td><?php esc_html_e( 'Fast delivery by road from Dubai', 'aria' ); ?></td></tr><?php endif; ?>
 					<tr><th><?php esc_html_e( 'Reefer', 'aria' ); ?></th><td><?php esc_html_e( '20 ft or 40 ft', 'aria' ); ?></td><td><?php esc_html_e( 'Soft dates such as Mazafati (Kimia)', 'aria' ); ?></td></tr>
 				</tbody>
 			</table>
 			<p class="muted mk-note"><?php esc_html_e( 'Loads depend on variety and packing (5 kg and 10 kg cartons, or retail packs under your label).', 'aria' ); ?></p>
 		</div>
 		<div>
-			<h3 class="mk-sub"><?php echo esc_html( sprintf( __( 'Ports we ship to in %s', 'aria' ), $c ) ); ?></h3>
+			<h3 class="mk-sub"><?php echo esc_html( sprintf( $sea ? __( 'Ports we ship to in %s', 'aria' ) : __( 'Where we deliver in %s', 'aria' ), $c ) ); ?></h3>
 			<ul class="mk-ports">
 				<?php foreach ( $m['ports'] as $p ) : ?>
 					<li><?php echo aria_icon( 'pin' ); // phpcs:ignore ?><span><strong><?php echo esc_html( $p[0] ); ?></strong><small><?php echo esc_html( $p[1] ); ?></small></span></li>
@@ -182,7 +186,7 @@ if ( ! empty( $loc['title'] ) ) :
 			<h2 id="season-title"><?php echo esc_html( $m['season']['title'] ); ?></h2>
 			<p><?php echo esc_html( $m['season']['text'] ); ?></p>
 		</div>
-		<a class="btn btn--gold" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>" data-quote-open data-port="<?php echo esc_attr( $port0 . ', ' . $c ); ?>"><?php esc_html_e( 'Reserve Ramadan stock', 'aria' ); ?></a>
+		<a class="btn btn--gold" href="<?php echo esc_url( home_url( '/get-a-quote/' ) ); ?>" data-quote-open data-port="<?php echo esc_attr( $port0 . ', ' . $c ); ?>"><?php echo false !== stripos( $m['season']['title'], 'Christmas' ) || false === stripos( $m['season']['title'], 'Ramadan' ) ? esc_html__( 'Reserve seasonal stock', 'aria' ) : esc_html__( 'Reserve Ramadan stock', 'aria' ); ?></a>
 	</div>
 </section>
 <?php endif; ?>
@@ -194,7 +198,7 @@ if ( ! empty( $loc['title'] ) ) :
 		</div>
 		<ol class="steps steps--row">
 			<li><strong><?php esc_html_e( 'Inquiry', 'aria' ); ?></strong><span><?php esc_html_e( 'Variety, grade, packing, number of containers and port.', 'aria' ); ?></span></li>
-			<li><strong><?php esc_html_e( 'Offer in 24 h', 'aria' ); ?></strong><span><?php echo esc_html( sprintf( __( 'Written CIF %s price and loading date.', 'aria' ), $c ) ); ?></span></li>
+			<li><strong><?php esc_html_e( 'Offer in 24 h', 'aria' ); ?></strong><span><?php echo esc_html( sprintf( __( 'Written price (%s) and loading date.', 'aria' ), $m['terms'] ) ); ?></span></li>
 			<li><strong><?php esc_html_e( 'Sample', 'aria' ); ?></strong><span><?php esc_html_e( 'Optional – check the grade before you confirm.', 'aria' ); ?></span></li>
 			<li><strong><?php esc_html_e( 'Contract & payment', 'aria' ); ?></strong><span><?php esc_html_e( 'UAE contract, TT or LC.', 'aria' ); ?></span></li>
 			<li><strong><?php esc_html_e( 'Loading in Dubai', 'aria' ); ?></strong><span><?php esc_html_e( 'From stock, with documents and bill of lading.', 'aria' ); ?></span></li>

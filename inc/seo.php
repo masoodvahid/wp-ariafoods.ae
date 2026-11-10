@@ -265,6 +265,12 @@ function aria_schema_graph( $canon, $desc, $img ) {
 		$graph[] = array( '@type' => 'BreadcrumbList', '@id' => $canon . '#breadcrumb', 'itemListElement' => $list );
 	}
 
+	if ( is_page() && function_exists( 'aria_export_market' ) ) {
+		foreach ( aria_export_schema( get_queried_object_id(), $canon, $desc, $img, $home, $org ) as $node ) {
+			$graph[] = $node;
+		}
+	}
+
 	if ( is_singular( 'post' ) ) {
 		$graph[] = array(
 			'@type'            => 'Article',
@@ -481,3 +487,87 @@ add_action( 'template_redirect', function () {
 		header( 'Cache-Control: public, max-age=600' );
 	}
 }, 0 );
+
+/**
+ * Export pages: WebPage + Service (with offer catalogue and served country) on /export/{country}/,
+ * CollectionPage + ItemList of country pages on /export/.
+ */
+function aria_export_schema( $pid, $canon, $desc, $img, $home, $org ) {
+	$out  = array();
+	$name = wp_strip_all_tags( get_the_title( $pid ) );
+	$page = array(
+		'@id'         => $canon . '#webpage',
+		'url'         => $canon,
+		'name'        => $name,
+		'description' => $desc,
+		'inLanguage'  => 'en',
+		'isPartOf'    => array( '@type' => 'WebSite', '@id' => $home . '#website', 'url' => $home, 'name' => aria_opt( 'company' ) ),
+		'publisher'   => array( '@id' => $org ),
+		'breadcrumb'  => array( '@id' => $canon . '#breadcrumb' ),
+		'dateModified' => get_post_modified_time( 'c', true, $pid ),
+	);
+	if ( ! empty( $img[0] ) ) {
+		$page['primaryImageOfPage'] = array( '@type' => 'ImageObject', 'url' => $img[0] );
+	}
+	$m = aria_export_market( $pid );
+	if ( $m ) {
+		$country = array( '@type' => 'Country', 'name' => $m['country'] );
+		if ( ! empty( $m['iso'] ) ) {
+			$country['identifier'] = $m['iso'];
+		}
+		$offers = array();
+		foreach ( (array) $m['varieties'] as $v ) {
+			$p    = get_page_by_path( $v[0], OBJECT, 'product' );
+			$item = array(
+				'@type'           => 'Product',
+				'name'            => $v[1],
+				'description'     => $v[2],
+				'countryOfOrigin' => array( '@type' => 'Country', 'name' => 'Iran' ),
+			);
+			if ( $p ) {
+				$item['@id'] = get_permalink( $p ) . '#product';
+				$item['url'] = get_permalink( $p );
+			}
+			$offers[] = array(
+				'@type'            => 'Offer',
+				'itemOffered'      => $item,
+				'seller'           => array( '@id' => $org ),
+				'eligibleRegion'   => $country,
+				'businessFunction' => 'http://purl.org/goodrelations/v1#Sell',
+				'eligibleCustomerType' => 'http://purl.org/goodrelations/v1#Business',
+				'eligibleQuantity' => array( '@type' => 'QuantitativeValue', 'minValue' => 1, 'unitText' => '20 ft container' ),
+			);
+		}
+		$service = array(
+			'@type'       => 'Service',
+			'@id'         => $canon . '#service',
+			'name'        => sprintf( 'Wholesale supply of Iranian dates to %s', $m['country'] ),
+			'serviceType' => 'Wholesale export of Iranian dates and date products',
+			'description' => $desc,
+			'url'         => $canon,
+			'provider'    => array( '@id' => $org ),
+			'areaServed'  => $country,
+			'audience'    => array( '@type' => 'BusinessAudience', 'audienceType' => 'Importers, wholesalers and food manufacturers' ),
+		);
+		if ( $offers ) {
+			$service['hasOfferCatalog'] = array(
+				'@type'           => 'OfferCatalog',
+				'name'            => sprintf( 'Iranian dates for %s', $m['country'] ),
+				'itemListElement' => $offers,
+			);
+		}
+		$out[] = array( '@type' => 'WebPage' ) + $page + array( 'about' => array( '@id' => $canon . '#service' ), 'mainEntity' => array( '@id' => $canon . '#service' ) );
+		$out[] = $service;
+		return $out;
+	}
+	if ( 'export' === get_post_field( 'post_name', $pid ) && ! wp_get_post_parent_id( $pid ) ) {
+		$kids  = get_pages( array( 'parent' => $pid, 'sort_column' => 'menu_order,post_title', 'post_status' => 'publish' ) );
+		$items = array();
+		foreach ( $kids as $i => $k ) {
+			$items[] = array( '@type' => 'ListItem', 'position' => $i + 1, 'url' => get_permalink( $k ), 'name' => wp_strip_all_tags( get_the_title( $k ) ) );
+		}
+		$out[] = array( '@type' => 'CollectionPage' ) + $page + array( 'mainEntity' => array( '@id' => $canon . '#markets' ) );
+		$out[] = array( '@type' => 'ItemList', '@id' => $canon . '#markets', 'name' => 'Export markets', 'numberOfItems' => count( $items ), 'itemListElement' => $items );
+	}
+	return $out;
+}

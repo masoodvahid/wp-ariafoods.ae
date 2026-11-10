@@ -138,9 +138,11 @@ function aria_export_menu_item() {
 		$desc = '';
 		if ( $m && ! empty( $m['ports'] ) ) {
 			$ports = array_slice( array_filter( array_map( function ( $p ) {
-				return trim( preg_replace( '/\s*\(.*\)$/', '', (string) $p[0] ) );
-			}, $m['ports'] ) ), 0, 3 );
-			$desc = $ports ? sprintf( __( 'Full containers to %s', 'aria' ), implode( ', ', $ports ) ) : '';
+				$n = preg_replace( '/\s*\(.*\)$/', '', (string) $p[0] );
+				return trim( preg_replace( '/\s*(&|and)\s.*$/', '', $n ) );
+			}, $m['ports'] ) ), 0, 2 );
+			$fmt  = ( isset( $m['mode'] ) && 'sea' !== $m['mode'] ) ? __( 'Full loads to %s', 'aria' ) : __( 'Full containers to %s', 'aria' );
+			$desc = $ports ? sprintf( $fmt, implode( ', ', $ports ) ) : '';
 		}
 		$children[] = array(
 			'title' => sprintf( __( 'Dates for %s', 'aria' ), $name ),
@@ -171,6 +173,7 @@ function aria_nav_with_export( $tree ) {
 			// Menu already has it: keep its place and title, fill the country list automatically.
 			$auto = aria_export_menu_item();
 			if ( $auto ) {
+				$tree[ $i ]['classes']  = array_merge( (array) $item['classes'], array( 'export-markets' ) );
 				$tree[ $i ]['children'] = $auto['children'];
 				$tree[ $i ]['current']  = ! empty( $item['current'] ) || $auto['current'];
 			}
@@ -205,7 +208,8 @@ function aria_primary_nav() {
 		$has_sub = $is_mega || ! empty( $item['children'] );
 		$current = ! empty( $item['current'] ) || aria_is_current_url( $item['url'] );
 		$id      = 'sub-' . $i;
-		echo '<li class="nav-item' . ( $has_sub ? ' has-sub' : '' ) . ( $is_mega ? ' is-mega' : '' ) . '">';
+		$is_exp  = in_array( 'export-markets', (array) $item['classes'], true );
+		echo '<li class="nav-item' . ( $has_sub ? ' has-sub' : '' ) . ( $is_mega ? ' is-mega' : '' ) . ( $is_exp ? ' is-export' : '' ) . '">';
 		echo '<a class="nav-link" href="' . esc_url( $item['url'] ) . '"' . ( $current ? ' aria-current="page"' : '' ) . '>' . esc_html( $item['title'] ) . '</a>';
 		if ( $has_sub ) {
 			echo '<button class="sub-toggle" type="button" aria-expanded="false" aria-controls="' . esc_attr( $id ) . '"><span class="screen-reader-text">' . esc_html( sprintf( __( 'Show %s submenu', 'aria' ), $item['title'] ) ) . '</span>' . aria_icon( 'chevron' ) . '</button>'; // phpcs:ignore
