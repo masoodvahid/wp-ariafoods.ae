@@ -9,13 +9,14 @@
 defined( 'ABSPATH' ) || exit;
 
 $slug  = aria_export_market_slug();
-$m     = aria_export_markets()[ $slug ];
+$m     = aria_export_market( get_the_ID() );
 $c     = $m['country'];
 $port0 = $m['ports'][0][0];
 $wa    = aria_wa_url( sprintf( 'Hello Aria Foods, I am an importer in %s and would like a price for a container of Iranian dates.', $c ) );
 $faq   = aria_faq_items( get_the_ID() );
 ?>
 <section class="hero hero--market" aria-labelledby="mk-title">
+	<?php echo aria_export_flag( $m ); // phpcs:ignore -- built from validated colours. ?>
 	<div class="wrap hero-grid">
 		<div class="hero-copy">
 			<?php aria_breadcrumbs(); ?>

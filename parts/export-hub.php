@@ -17,8 +17,8 @@ aria_page_head( get_the_title(), has_excerpt() ? get_the_excerpt() : '' );
 			<div class="seg-grid mk-hub">
 				<?php
 				foreach ( $kids as $k ) :
-					$mk = aria_export_markets();
-					$cn = isset( $mk[ $k->post_name ] ) ? $mk[ $k->post_name ]['country'] : $k->post_title;
+					$mk = aria_export_market( $k->ID );
+					$cn = $mk ? $mk['country'] : $k->post_title;
 					?>
 					<a class="seg" href="<?php echo esc_url( get_permalink( $k ) ); ?>">
 						<?php echo aria_icon( 'globe' ); // phpcs:ignore ?>

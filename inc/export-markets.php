@@ -14,6 +14,8 @@ function aria_export_markets() {
 	return array(
 		'india' => array(
 			'country'   => 'India',
+			'flag'      => array( '#FF9933', '#FFFFFF', '#138808' ),
+			'emblem'    => 'chakra',
 			'demonym'   => 'Indian',
 			'title'     => 'Iranian Dates Supplier for India',
 			'h1'        => 'Iranian dates for Indian importers – full containers from our Dubai warehouse',
@@ -123,6 +125,98 @@ function aria_export_default_faq( $slug ) {
 	return '';
 }
 
+/**
+ * Facts for a market page: defaults from aria_export_markets() (by slug), overridden by the
+ * page's own "Export market facts" box (JSON). A child page of /export/ with only the box
+ * filled in also works, so new countries need no theme update.
+ */
+function aria_export_market( $post_id = null ) {
+	$post_id = $post_id ? $post_id : get_the_ID();
+	$parent  = wp_get_post_parent_id( $post_id );
+	if ( ! $parent || 'export' !== get_post_field( 'post_name', $parent ) ) {
+		return null;
+	}
+	$slug = get_post_field( 'post_name', $post_id );
+	$base = aria_export_markets();
+	$m    = isset( $base[ $slug ] ) ? $base[ $slug ] : array();
+	$own  = json_decode( (string) get_post_meta( $post_id, '_aria_market', true ), true );
+	if ( is_array( $own ) ) {
+		$m = array_merge( $m, $own );
+	}
+	if ( empty( $m['country'] ) ) {
+		return null;
+	}
+	return wp_parse_args( $m, array(
+		'demonym'   => $m['country'],
+		'h1'        => get_the_title( $post_id ),
+		'lead'      => get_post_field( 'post_excerpt', $post_id ),
+		'ports'     => array( array( $m['country'], '' ) ),
+		'transit'   => 'Short sailing from Jebel Ali – ask us for the current schedule to your port.',
+		'season'    => array(),
+		'varieties' => array(),
+		'docs'      => array( 'Certificate of origin (Iran)', 'Phytosanitary certificate', 'Health certificate', 'Commercial invoice from our UAE company', 'Packing list and bill of lading' ),
+		'buyer'     => 'Your customs broker clears the cargo; we prepare the full document set before loading.',
+		'flag'      => array(),
+		'emblem'    => '',
+	) );
+}
+
+/** Decorative flag behind the hero (colour bands, optional emblem). */
+function aria_export_flag( $m ) {
+	if ( empty( $m['flag'] ) || ! is_array( $m['flag'] ) ) {
+		return '';
+	}
+	$bands = '';
+	foreach ( array_values( $m['flag'] ) as $c ) {
+		if ( preg_match( '/^#[0-9a-f]{3,8}$/i', $c ) ) {
+			$bands .= '<i style="background:' . esc_attr( $c ) . '"></i>';
+		}
+	}
+	$emblem = '';
+	if ( 'chakra' === $m['emblem'] ) {
+		$sp = '';
+		for ( $k = 0; $k < 24; $k++ ) {
+			$a   = deg2rad( $k * 15 );
+			$sp .= sprintf( '<line x1="50" y1="50" x2="%.2f" y2="%.2f"/>', 50 + 40 * cos( $a ), 50 + 40 * sin( $a ) );
+		}
+		$emblem = '<svg class="mk-flag-emblem" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#0a3a8c" stroke-width="2.2"><circle cx="50" cy="50" r="42"/>' . $sp . '</g><circle cx="50" cy="50" r="7" fill="#0a3a8c"/></svg>';
+	}
+	return '<div class="mk-flag" aria-hidden="true"><div class="mk-flag-bands">' . $bands . '</div>' . $emblem . '</div>';
+}
+
+/* "Export market facts" box on market pages: edit everything in WordPress, no theme update. */
+add_action( 'add_meta_boxes_page', function ( $post ) {
+	$parent = wp_get_post_parent_id( $post->ID );
+	if ( $parent && 'export' === get_post_field( 'post_name', $parent ) ) {
+		add_meta_box( 'aria_market', __( 'Export market facts (JSON)', 'aria' ), 'aria_box_market', 'page', 'normal', 'default' );
+	}
+} );
+
+function aria_box_market( $post ) {
+	wp_nonce_field( 'aria_market', 'aria_market_nonce' );
+	$m = aria_export_market( $post->ID );
+	if ( ! $m ) {
+		$m = array( 'country' => '', 'demonym' => '', 'h1' => '', 'lead' => '', 'flag' => array(), 'ports' => array( array( 'Port', 'Region served' ) ), 'transit' => '', 'varieties' => array( array( 'product-slug', 'Name', 'Why it sells', 'Dry container' ) ), 'docs' => array(), 'buyer' => '' );
+	}
+	unset( $m['seo_title'], $m['seo_desc'], $m['title'] );
+	echo '<p>' . esc_html__( 'Country, ports, varieties, documents and flag colours for this page. Keep valid JSON; invalid JSON is not saved.', 'aria' ) . '</p>';
+	echo '<textarea name="aria_market" rows="22" style="width:100%;font-family:monospace;font-size:12px">' . esc_textarea( wp_json_encode( $m, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ) . '</textarea>';
+}
+
+add_action( 'save_post_page', function ( $post_id ) {
+	if ( ! isset( $_POST['aria_market_nonce'], $_POST['aria_market'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['aria_market_nonce'] ) ), 'aria_market' ) || ! current_user_can( 'edit_page', $post_id ) ) {
+		return;
+	}
+	$raw  = wp_unslash( $_POST['aria_market'] ); // phpcs:ignore -- validated as JSON below.
+	$data = json_decode( $raw, true );
+	if ( is_array( $data ) && ! empty( $data['country'] ) ) {
+		array_walk_recursive( $data, function ( &$v ) {
+			$v = is_string( $v ) ? sanitize_text_field( $v ) : $v;
+		} );
+		update_post_meta( $post_id, '_aria_market', wp_slash( wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ) );
+	}
+} );
+
 /** Market slug of the current page, or ''. */
 function aria_export_market_slug( $post_id = null ) {
 	$post_id = $post_id ? $post_id : get_the_ID();
@@ -130,6 +224,5 @@ function aria_export_market_slug( $post_id = null ) {
 	if ( ! $parent || 'export' !== get_post_field( 'post_name', $parent ) ) {
 		return '';
 	}
-	$slug = get_post_field( 'post_name', $post_id );
-	return isset( aria_export_markets()[ $slug ] ) ? $slug : '';
+	return aria_export_market( $post_id ) ? get_post_field( 'post_name', $post_id ) : '';
 }
