@@ -135,7 +135,7 @@
 				b.addEventListener('click', function () {
 					var kind = b.getAttribute('data-kind');
 					$$('button', group).forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-					$$('.pcard', grid).forEach(function (c) { c.hidden = kind !== 'all' && c.getAttribute('data-kind') !== kind; });
+					$$('.pcard', grid).forEach(function (c) { c.hidden = kind !== 'all' && (' ' + c.getAttribute('data-kind') + ' ').indexOf(' ' + kind + ' ') < 0; });
 				});
 			});
 		});

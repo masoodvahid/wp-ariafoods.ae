@@ -27,7 +27,7 @@ function aria_product_card( $post_id = null, $eager = false ) {
 	$facts   = aria_card_facts( $post_id );
 	$kind    = aria_is_variety( $post_id ) ? 'dates' : 'ingredients';
 	?>
-	<article class="pcard" data-kind="<?php echo esc_attr( $kind ); ?>">
+	<article class="pcard<?php echo aria_on_request( $post_id ) ? ' pcard--onreq' : ''; ?>" data-kind="<?php echo esc_attr( $kind . ( aria_on_request( $post_id ) ? ' onreq' : ' stock' ) ); ?>">
 		<a class="pcard-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>">
 			<span class="pcard-media"><?php echo aria_on_request( $post_id ) ? '<span class="pcard-badge">' . esc_html__( 'On request', 'aria' ) . '</span>' : ''; // phpcs:ignore ?><?php echo ( aria_on_request( $post_id ) && ! has_post_thumbnail( $post_id ) && ! get_post_meta( $post_id, '_aria_remote_thumb', true ) ) ? '<span class="onreq-media onreq-media--card">' . aria_icon( 'clock' ) . '<span>' . esc_html__( 'Sourced on request', 'aria' ) . '</span></span>' : aria_product_image( $post_id, 'aria-card', array( 'alt' => get_the_title( $post_id ), 'loading' => $eager ? 'eager' : 'lazy', 'sizes' => '(min-width: 1100px) 280px, (min-width: 700px) 33vw, 50vw' ) ); // phpcs:ignore ?></span>
 			<span class="pcard-body">

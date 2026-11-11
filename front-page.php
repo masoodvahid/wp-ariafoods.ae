@@ -123,18 +123,22 @@ $products = new WP_Query( array(
 	'no_found_rows'  => true,
 ) );
 if ( $products->have_posts() ) :
+	$has_onreq = (bool) array_filter( wp_list_pluck( $products->posts, 'ID' ), 'aria_on_request' );
 	?>
 <section class="section" aria-labelledby="range-title">
 	<div class="wrap">
 		<div class="section-head section-head--row">
 			<div>
 				<h2 id="range-title"><?php esc_html_e( 'The range', 'aria' ); ?></h2>
-				<p><?php esc_html_e( 'Key specifications at a glance. Open a product for the full sheet, packing and order volumes.', 'aria' ); ?></p>
+				<p><?php echo $has_onreq ? esc_html__( 'Key specifications at a glance. Varieties marked “On request” are not in our Dubai stock – we source them for you and suggest a ready alternative.', 'aria' ) : esc_html__( 'Key specifications at a glance. Open a product for the full sheet, packing and order volumes.', 'aria' ); ?></p>
 			</div>
 			<div class="filter" role="group" aria-label="<?php esc_attr_e( 'Filter products', 'aria' ); ?>" data-filter="#range-grid">
 				<button type="button" aria-pressed="true" data-kind="all"><?php esc_html_e( 'All', 'aria' ); ?></button>
 				<button type="button" aria-pressed="false" data-kind="dates"><?php esc_html_e( 'Date varieties', 'aria' ); ?></button>
 				<button type="button" aria-pressed="false" data-kind="ingredients"><?php esc_html_e( 'Ingredients', 'aria' ); ?></button>
+				<?php if ( $has_onreq ) : ?>
+				<button type="button" aria-pressed="false" data-kind="onreq"><?php esc_html_e( 'On request', 'aria' ); ?></button>
+				<?php endif; ?>
 			</div>
 		</div>
 		<div class="pgrid" id="range-grid">

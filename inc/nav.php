@@ -93,9 +93,15 @@ function aria_mega_products() {
 			continue;
 		}
 		echo '<div class="mega-col"><p class="mega-title"><a href="' . esc_url( get_term_link( $term ) ) . '">' . esc_html( $label ) . '</a></p><ul>';
+		$onreq = array();
 		while ( $q->have_posts() ) {
 			$q->the_post();
 			if ( 'date-syrup' === get_post_field( 'post_name' ) ) {
+				continue;
+			}
+			// Varieties sourced on request get their own row below the Dubai-stock list.
+			if ( aria_on_request( get_the_ID() ) ) {
+				$onreq[] = '<li><a href="' . esc_url( get_permalink() ) . '">' . esc_html( trim( preg_replace( array( '/\s*\(Iranian-grown\)/i', '/\s+dates?\b/i' ), '', get_the_title() ) ) ) . '</a></li>';
 				continue;
 			}
 			$facts = array_filter( array( aria_spec( get_the_ID(), 'moist' ), aria_spec( get_the_ID(), '^size' ) ) );
@@ -106,7 +112,11 @@ function aria_mega_products() {
 			echo '</a></li>';
 		}
 		wp_reset_postdata();
-		echo '</ul></div>';
+		echo '</ul>';
+		if ( $onreq ) {
+			echo '<p class="mega-sub"><span>' . esc_html__( 'Sourced on request', 'aria' ) . '</span> ' . esc_html__( 'not in Dubai stock', 'aria' ) . '</p><ul class="mega-onreq">' . implode( '', $onreq ) . '</ul>'; // phpcs:ignore
+		}
+		echo '</div>';
 	}
 	$syrup = get_page_by_path( 'date-syrup', OBJECT, 'product' );
 	if ( $syrup ) {
