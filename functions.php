@@ -19,6 +19,7 @@ require ARIA_DIR . '/inc/customizer.php';
 require ARIA_DIR . '/inc/nav.php';
 require ARIA_DIR . '/inc/forms.php';
 require ARIA_DIR . '/inc/mail.php';
+require ARIA_DIR . '/inc/mail-templates.php';
 require ARIA_DIR . '/inc/leads.php';
 require ARIA_DIR . '/inc/telegram.php';
 require ARIA_DIR . '/inc/account.php';

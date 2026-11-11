@@ -71,6 +71,25 @@ add_action( 'admin_post_aria_settings', function () {
 			$new = array( 'ts_site' => '', 'ts_secret' => '' );
 		}
 		update_option( 'aria_mail', array_merge( $old, $new ), false );
+	} elseif ( 'tpl' === $tab ) {
+		$def = aria_mail_tpl_defaults();
+		$new = array();
+		foreach ( array( 'css', 'admin_subject', 'admin_html', 'customer_subject', 'customer_html' ) as $k ) {
+			$v         = (string) ( $in[ $k ] ?? '' );
+			$new[ $k ] = current_user_can( 'unfiltered_html' ) ? $v : wp_kses_post( $v );
+		}
+		$new['customer_on'] = empty( $in['customer_on'] ) ? 0 : 1;
+		foreach ( array( 'admin', 'customer', 'css' ) as $r ) {
+			if ( ! empty( $in[ 'reset_' . $r ] ) ) {
+				if ( 'css' === $r ) {
+					$new['css'] = $def['css'];
+				} else {
+					$new[ $r . '_subject' ] = $def[ $r . '_subject' ];
+					$new[ $r . '_html' ]    = $def[ $r . '_html' ];
+				}
+			}
+		}
+		update_option( 'aria_mail_tpl', $new, false );
 	} elseif ( 'fonts' === $tab ) {
 		$lib = aria_font_library();
 		foreach ( array( 'head', 'body' ) as $r ) {
@@ -115,6 +134,36 @@ add_action( 'admin_post_aria_settings_do', function () {
 			}
 			$msg = $ok ? 'tg_test_ok' : 'tg_fail';
 			break;
+		case 'mail_check':
+			$tab   = 'test';
+			$to    = isset( $_POST['to'] ) ? sanitize_email( wp_unslash( $_POST['to'] ) ) : '';
+			$which = isset( $_POST['which'] ) ? sanitize_key( $_POST['which'] ) : 'admin';
+			if ( ! is_email( $to ) ) {
+				$msg = 'bad_to';
+				break;
+			}
+			delete_option( 'aria_mail_error' );
+			$GLOBALS['aria_mail_debug'] = true;
+			$GLOBALS['aria_mail_log']   = array();
+			$t0 = microtime( true );
+			if ( 'plain' === $which ) {
+				$ok = wp_mail( $to, '[Aria Foods] Test email', "Plain-text test from Aria settings → Email test.\nSent: " . wp_date( 'Y-m-d H:i:s' ) );
+			} else {
+				$r  = aria_mail_render( 'customer' === $which ? 'customer' : 'admin' );
+				$ok = aria_send_html( $to, '[TEST] ' . $r['subject'], $r['html'] );
+			}
+			$err = get_option( 'aria_mail_error' );
+			set_transient( 'aria_mail_test_' . get_current_user_id(), array(
+				'ok'    => $ok && ! $err,
+				'to'    => $to,
+				'which' => $which,
+				'time'  => round( microtime( true ) - $t0, 2 ),
+				'error' => $err ? $err['message'] : '',
+				'log'   => array_slice( (array) $GLOBALS['aria_mail_log'], 0, 400 ),
+				'via'   => aria_mail_settings()['smtp'] ? 'SMTP' : 'PHP mail',
+			), 10 * MINUTE_IN_SECONDS );
+			$msg = ( $ok && ! $err ) ? 'mail_ok' : 'mail_fail';
+			break;
 		case 'mail_test':
 			$tab = isset( $_POST['tab'] ) ? sanitize_key( $_POST['tab'] ) : 'notify';
 			delete_option( 'aria_mail_error' );
@@ -142,6 +191,8 @@ function aria_settings_page() {
 	$tabs = array(
 		'notify' => __( 'Notifications', 'aria' ),
 		'email'  => __( 'Email delivery', 'aria' ),
+		'test'   => __( 'Email test', 'aria' ),
+		'tpl'    => __( 'Email templates', 'aria' ),
 		'spam'   => __( 'Spam protection', 'aria' ),
 		'fonts'  => __( 'Fonts', 'aria' ),
 	);
@@ -154,6 +205,7 @@ function aria_settings_page() {
 		'tg_fail'    => array( 'error', __( 'Telegram did not accept the request.', 'aria' ) . ' ' . ( get_option( 'aria_tg_error' ) ? get_option( 'aria_tg_error' )['message'] : '' ) ),
 		'code'       => array( 'success', __( 'New join link created. The old link no longer works; current members stay.', 'aria' ) ),
 		'removed'    => array( 'success', __( 'Staff member removed.', 'aria' ) ),
+		'bad_to'     => array( 'error', __( 'Enter a valid email address to send the test to.', 'aria' ) ),
 		'mail_ok'    => array( 'success', __( 'The server accepted the test email. Check the inbox (and spam folder) of each recipient.', 'aria' ) ),
 		'mail_fail'  => array( 'error', __( 'The test email could not be sent:', 'aria' ) . ' ' . ( get_option( 'aria_mail_error' ) ? get_option( 'aria_mail_error' )['message'] : '' ) ),
 	);
@@ -351,4 +403,151 @@ function aria_settings_tab_fonts() {
 	<?php
 	submit_button();
 	echo '</form>';
+}
+
+/* ---------- Email test ---------- */
+
+function aria_dns_txt( $name ) {
+	$r = @dns_get_record( $name, DNS_TXT ); // phpcs:ignore
+	return is_array( $r ) ? array_map( function ( $x ) {
+		return isset( $x['txt'] ) ? $x['txt'] : implode( '', (array) ( $x['entries'] ?? array() ) );
+	}, $r ) : array();
+}
+
+function aria_settings_tab_test() {
+	$res    = get_transient( 'aria_mail_test_' . get_current_user_id() );
+	$domain = aria_mail_domain();
+	$spf    = implode( ' ', array_filter( aria_dns_txt( $domain ), function ( $t ) {
+		return 0 === stripos( $t, 'v=spf1' );
+	} ) );
+	$dmarc  = implode( ' ', aria_dns_txt( '_dmarc.' . $domain ) );
+	$dkim   = aria_dns_txt( 'x._domainkey.' . $domain );
+	$mx     = @dns_get_record( $domain, DNS_MX ); // phpcs:ignore
+	$ip     = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '';
+	$s      = aria_mail_settings();
+	$smtp   = $s['smtp'] && $s['host'] && $s['user'] && $s['pass'];
+	$in_spf = $ip && ( false !== strpos( $spf, $ip ) || ( $ip && preg_match_all( '~ip4:([0-9.]+)/(\d+)~', $spf, $mm, PREG_SET_ORDER ) && array_filter( $mm, function ( $m ) use ( $ip ) {
+		$mask = -1 << ( 32 - (int) $m[2] );
+		return ( ip2long( $ip ) & $mask ) === ( ip2long( $m[1] ) & $mask );
+	} ) ) );
+	$row = function ( $label, $ok, $text ) {
+		echo '<tr><th style="width:190px">' . esc_html( $label ) . '</th><td>' . ( null === $ok ? '' : ( $ok ? '<span class="ok">✓</span> ' : '<span class="bad">✗</span> ' ) ) . '<code style="white-space:normal;word-break:break-all">' . esc_html( $text ? $text : '—' ) . '</code></td></tr>';
+	};
+	?>
+	<div class="card">
+		<h2><?php esc_html_e( 'Send a test email', 'aria' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'Sends one email with sample inquiry data and shows exactly what the mail server answered.', 'aria' ); ?></p>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<?php wp_nonce_field( 'aria_settings_do' ); ?>
+			<input type="hidden" name="action" value="aria_settings_do"><input type="hidden" name="do" value="mail_check">
+			<table class="form-table" role="presentation">
+				<tr><th><label for="t-to"><?php esc_html_e( 'Send to', 'aria' ); ?></label></th><td><input id="t-to" type="email" class="regular-text" name="to" value="<?php echo esc_attr( $res ? $res['to'] : wp_get_current_user()->user_email ); ?>" required>
+					<p class="description"><?php esc_html_e( 'Tip: test once with an ariafoods.ae address and once with a Gmail address.', 'aria' ); ?></p></td></tr>
+				<tr><th><?php esc_html_e( 'Email', 'aria' ); ?></th><td>
+					<label><input type="radio" name="which" value="admin" <?php checked( ! $res || 'admin' === $res['which'] ); ?>> <?php esc_html_e( 'Inquiry alert (to staff)', 'aria' ); ?></label><br>
+					<label><input type="radio" name="which" value="customer" <?php checked( $res && 'customer' === $res['which'] ); ?>> <?php esc_html_e( 'Confirmation (to customer)', 'aria' ); ?></label><br>
+					<label><input type="radio" name="which" value="plain" <?php checked( $res && 'plain' === $res['which'] ); ?>> <?php esc_html_e( 'Plain text', 'aria' ); ?></label>
+				</td></tr>
+			</table>
+			<?php submit_button( __( 'Send test email', 'aria' ), 'primary', 'submit', false ); ?>
+		</form>
+	</div>
+
+	<?php if ( $res ) : ?>
+	<div class="card">
+		<h2><?php esc_html_e( 'Last test result', 'aria' ); ?></h2>
+		<p><?php echo $res['ok'] ? '<span class="ok">✓ ' . esc_html__( 'Accepted by the mail server', 'aria' ) . '</span>' : '<span class="bad">✗ ' . esc_html__( 'Not sent', 'aria' ) . '</span>'; ?>
+			· <?php echo esc_html( $res['to'] . ' · ' . $res['via'] . ' · ' . $res['time'] . ' s' ); ?></p>
+		<?php if ( $res['error'] ) : ?><p class="bad"><?php echo esc_html( $res['error'] ); ?></p><?php endif; ?>
+		<?php if ( $res['ok'] ) : ?><p class="description"><?php esc_html_e( '“Accepted” means our server handed the email over. If it still does not arrive, check the spam folder and the DNS checks below.', 'aria' ); ?></p><?php endif; ?>
+		<?php if ( $res['log'] ) : ?>
+			<details><summary><?php esc_html_e( 'SMTP conversation', 'aria' ); ?></summary>
+			<pre style="max-height:320px;overflow:auto;background:#1d2327;color:#e2e4e7;padding:12px;border-radius:6px;font-size:12px;white-space:pre-wrap"><?php echo esc_html( implode( "\n", $res['log'] ) ); ?></pre></details>
+		<?php elseif ( 'PHP mail' === $res['via'] ) : ?>
+			<p class="description"><?php esc_html_e( 'PHP mail hands the message to the server without a conversation log. Turn on SMTP (Email delivery tab) to see the full exchange.', 'aria' ); ?></p>
+		<?php endif; ?>
+	</div>
+	<?php endif; ?>
+
+	<div class="card">
+		<h2><?php esc_html_e( 'Setup checks', 'aria' ); ?></h2>
+		<table class="widefat striped"><tbody>
+			<?php
+			$row( __( 'Sending method', 'aria' ), $smtp ? true : null, $smtp ? 'SMTP ' . $s['host'] . ':' . $s['port'] . ' as ' . $s['user'] : 'PHP mail (server) – SMTP recommended' );
+			$row( __( 'From / envelope', 'aria' ), 0 === substr_compare( aria_mail_from_address(), '@' . $domain, -strlen( '@' . $domain ) ), aria_mail_from_address() );
+			$row( __( 'Recipients', 'aria' ), true, implode( ', ', aria_leads_recipients() ) );
+			$row( 'MX', ! empty( $mx ), $mx ? implode( ', ', wp_list_pluck( $mx, 'target' ) ) : '' );
+			$row( 'SPF', (bool) $spf, $spf );
+			if ( ! $smtp ) {
+				$row( __( 'Web server IP in SPF', 'aria' ), (bool) $in_spf, $ip );
+			}
+			$row( 'DKIM (selector x)', (bool) $dkim, $dkim ? substr( $dkim[0], 0, 60 ) . '…' : '' );
+			$row( 'DMARC', (bool) $dmarc, $dmarc );
+			$row( __( 'Last error', 'aria' ), ! get_option( 'aria_mail_error' ), get_option( 'aria_mail_error' ) ? get_option( 'aria_mail_error' )['message'] : 'none' );
+			?>
+		</tbody></table>
+		<?php if ( false !== stripos( $dmarc, 'p=reject' ) && ! $smtp ) : ?>
+			<p class="description" style="margin-top:10px"><?php esc_html_e( 'The domain rejects any email that fails SPF/DKIM (DMARC p=reject). Sending through SMTP with a real ariafoods.ae mailbox is the most reliable setup.', 'aria' ); ?></p>
+		<?php endif; ?>
+	</div>
+	<?php
+}
+
+/* ---------- Email templates ---------- */
+
+add_action( 'admin_enqueue_scripts', function ( $hook ) {
+	if ( 'toplevel_page_aria-settings' !== $hook || ! isset( $_GET['tab'] ) || 'tpl' !== $_GET['tab'] ) { // phpcs:ignore
+		return;
+	}
+	$html = wp_enqueue_code_editor( array( 'type' => 'text/html', 'codemirror' => array( 'lint' => false, 'gutters' => array() ), 'htmlhint' => false ) );
+	$css  = wp_enqueue_code_editor( array( 'type' => 'text/css', 'codemirror' => array( 'lint' => false, 'gutters' => array() ), 'csslint' => false ) );
+	if ( $html ) {
+		wp_add_inline_script( 'code-editor', 'jQuery(function(){var h=' . wp_json_encode( $html ) . ',c=' . wp_json_encode( $css ) . ';window.ariaEditors=[];document.querySelectorAll("textarea[data-code]").forEach(function(t){var ed=wp.codeEditor.initialize(t,t.dataset.code==="css"?c:h);window.ariaEditors.push(ed);ed.codemirror.on("change",function(){ed.codemirror.save();t.dispatchEvent(new Event("input"));});});});' );
+	}
+} );
+
+function aria_settings_tab_tpl() {
+	$t = aria_mail_tpl();
+	aria_settings_form_open( 'tpl' );
+	$ph = '{{name}} {{company}} {{email}} {{whatsapp}} {{product}} {{quantity}} {{port}} {{message}} {{order}} {{type}} {{id}} {{date}} {{details}} {{site_name}} {{site_url}} {{logo_url}} {{admin_link}} {{whatsapp_link}} {{phone}} {{year}}';
+	?>
+	<div class="card" style="max-width:1100px">
+		<p><?php esc_html_e( 'Edit the HTML and CSS of the emails sent for each inquiry. Placeholders are replaced with the inquiry data:', 'aria' ); ?></p>
+		<p><code style="white-space:normal;line-height:2"><?php echo esc_html( $ph ); ?></code></p>
+		<p class="description"><?php esc_html_e( '{{details}} inserts a table of all fields. The CSS is shared by both emails; email apps support simple CSS best (no flex/grid, web fonts are ignored).', 'aria' ); ?></p>
+	</div>
+	<?php
+	$blocks = array(
+		'admin'    => array( __( 'Inquiry alert – to staff', 'aria' ), __( 'Sent to the email recipients for every genuine inquiry. Replying goes to the customer.', 'aria' ) ),
+		'customer' => array( __( 'Confirmation – to the customer', 'aria' ), __( 'Sent to the buyer straight after the form. Replying goes to your first email recipient.', 'aria' ) ),
+	);
+	foreach ( $blocks as $k => $b ) :
+		$r = aria_mail_render( $k, 0, $t );
+		?>
+		<div class="card" style="max-width:1100px">
+			<h2><?php echo esc_html( $b[0] ); ?></h2>
+			<p class="description"><?php echo esc_html( $b[1] ); ?></p>
+			<?php if ( 'customer' === $k ) : ?>
+				<p><label><input type="checkbox" name="s[customer_on]" value="1" <?php checked( ! empty( $t['customer_on'] ) ); ?>> <?php esc_html_e( 'Send this confirmation to customers', 'aria' ); ?></label></p>
+			<?php endif; ?>
+			<p><label><strong><?php esc_html_e( 'Subject', 'aria' ); ?></strong><br><input class="large-text" name="s[<?php echo esc_attr( $k ); ?>_subject]" value="<?php echo esc_attr( $t[ $k . '_subject' ] ); ?>"></label></p>
+			<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start">
+				<div><strong><?php esc_html_e( 'HTML', 'aria' ); ?></strong>
+					<textarea data-code="html" data-preview="pv-<?php echo esc_attr( $k ); ?>" name="s[<?php echo esc_attr( $k ); ?>_html]" rows="22" class="large-text code"><?php echo esc_textarea( $t[ $k . '_html' ] ); ?></textarea></div>
+				<div><strong><?php esc_html_e( 'Preview (saved version, sample data)', 'aria' ); ?></strong>
+					<p class="al-muted" style="margin:4px 0"><?php echo esc_html( $r['subject'] ); ?></p>
+					<iframe id="pv-<?php echo esc_attr( $k ); ?>" title="preview" style="width:100%;height:520px;border:1px solid #dcdcde;border-radius:6px;background:#fff" srcdoc="<?php echo esc_attr( $r['html'] ); ?>"></iframe></div>
+			</div>
+			<p><label><input type="checkbox" name="s[reset_<?php echo esc_attr( $k ); ?>]" value="1"> <?php esc_html_e( 'Reset this email to the default design', 'aria' ); ?></label></p>
+		</div>
+	<?php endforeach; ?>
+	<div class="card" style="max-width:1100px">
+		<h2>CSS</h2>
+		<textarea data-code="css" name="s[css]" rows="16" class="large-text code"><?php echo esc_textarea( $t['css'] ); ?></textarea>
+		<p><label><input type="checkbox" name="s[reset_css]" value="1"> <?php esc_html_e( 'Reset CSS to default', 'aria' ); ?></label></p>
+	</div>
+	<?php
+	submit_button( __( 'Save templates', 'aria' ) );
+	echo '</form>';
+	echo '<p class="description">' . esc_html__( 'After saving, send yourself a sample from the Email test tab.', 'aria' ) . '</p>';
 }

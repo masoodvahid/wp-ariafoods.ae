@@ -213,14 +213,14 @@ function aria_handle_inquiry() {
 		}
 	}
 
-	$body = '';
-	foreach ( $clean as $k => $v ) {
-		$body .= $k . ': ' . $v . "\n";
-	}
-	$to = aria_leads_recipients();
-	if ( ! $spam ) {
-		$body .= "\n" . admin_url( 'edit.php?post_type=aria_lead' );
-		wp_mail( $to, '[Aria Foods] ' . $title, $body, array( 'Reply-To: ' . ( isset( $clean['Name'] ) ? str_replace( array( '"', '<', '>' ), '', $clean['Name'] ) : '' ) . ' <' . $email . '>' ) );
+	if ( ! $spam && $lead_id && ! is_wp_error( $lead_id ) ) {
+		// Send after the visitor has the reply, so a slow mail server never delays the form.
+		register_shutdown_function( function () use ( $lead_id ) {
+			if ( function_exists( 'fastcgi_finish_request' ) ) {
+				fastcgi_finish_request();
+			}
+			aria_lead_send_emails( $lead_id );
+		} );
 	}
 
 	set_transient( $key, $hit + 1, HOUR_IN_SECONDS );

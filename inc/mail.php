@@ -64,6 +64,17 @@ add_action( 'phpmailer_init', function ( $mailer ) {
 		$mailer->SMTPAutoTLS = 'tls' === $s['secure'];
 		$mailer->Timeout    = 15;
 	}
+	// Email test in Aria settings: record the SMTP conversation (passwords hidden).
+	if ( ! empty( $GLOBALS['aria_mail_debug'] ) && 'smtp' === $mailer->Mailer ) {
+		$mailer->SMTPDebug   = 3;
+		$mailer->Debugoutput = function ( $str ) {
+			$str = trim( (string) $str );
+			if ( preg_match( '/^(CLIENT -> SERVER: )([A-Za-z0-9+\/=]{8,})$/', $str, $m ) ) {
+				$str = $m[1] . '[hidden]';
+			}
+			$GLOBALS['aria_mail_log'][] = preg_replace( '/(AUTH PLAIN )\S+/', '$1[hidden]', $str );
+		};
+	}
 	// Envelope sender = From address, so SPF/DKIM align with DMARC.
 	if ( is_email( $mailer->From ) ) {
 		$mailer->Sender = $mailer->From;
