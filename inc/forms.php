@@ -208,6 +208,10 @@ function aria_handle_inquiry() {
 			update_post_meta( $lead_id, '_aria_user', get_current_user_id() );
 		}
 		update_post_meta( $lead_id, '_aria_lead_status', 'Received' );
+		// Visitor's country from Cloudflare (two-letter code), for the dashboard.
+		if ( ! empty( $_SERVER['HTTP_CF_IPCOUNTRY'] ) && preg_match( '/^[A-Z]{2}$/', $_SERVER['HTTP_CF_IPCOUNTRY'] ) ) { // phpcs:ignore
+			update_post_meta( $lead_id, '_aria_ip_country', sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_IPCOUNTRY'] ) ) );
+		}
 		if ( ! $spam ) {
 			do_action( 'aria_new_lead', $lead_id );
 		}
