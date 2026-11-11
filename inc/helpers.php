@@ -262,7 +262,40 @@ function aria_availability_options() {
 		'PreOrder'   => __( 'Pre-order (next harvest)', 'aria' ),
 		'LimitedAvailability' => __( 'Limited availability', 'aria' ),
 		'OutOfStock' => __( 'Out of stock', 'aria' ),
+		'BackOrder'  => __( 'Not in Dubai stock – sourced on request', 'aria' ),
 	);
+}
+
+/** Variety we do not hold in Dubai but source on request. */
+function aria_on_request( $post_id ) {
+	return 'BackOrder' === get_post_meta( $post_id, '_aria_availability', true );
+}
+
+/** In-stock products suggested instead of an on-request one (from "_aria_alternatives", else similar in-stock dates). */
+function aria_alternatives( $post_id, $limit = 2 ) {
+	$out = array();
+	foreach ( array_filter( array_map( 'trim', explode( ',', (string) get_post_meta( $post_id, '_aria_alternatives', true ) ) ) ) as $slug ) {
+		$p = get_page_by_path( $slug, OBJECT, 'product' );
+		if ( $p && 'publish' === $p->post_status && ! aria_on_request( $p->ID ) ) {
+			$out[] = $p->ID;
+		}
+	}
+	return array_slice( $out, 0, $limit );
+}
+
+/** Date varieties that ship today from Dubai stock. */
+function aria_in_stock_dates( $exclude = array() ) {
+	$ids = get_posts( array(
+		'post_type'      => 'product',
+		'posts_per_page' => 30,
+		'fields'         => 'ids',
+		'post__not_in'   => (array) $exclude,
+		'orderby'        => array( 'menu_order' => 'ASC', 'title' => 'ASC' ),
+		'tax_query'      => array( array( 'taxonomy' => 'product_cat', 'field' => 'slug', 'terms' => 'dates' ) ),
+	) );
+	return array_values( array_filter( $ids, function ( $id ) {
+		return ! in_array( get_post_meta( $id, '_aria_availability', true ), array( 'BackOrder', 'OutOfStock' ), true );
+	} ) );
 }
 
 function aria_product_data( $post_id ) {

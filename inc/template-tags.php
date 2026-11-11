@@ -29,7 +29,7 @@ function aria_product_card( $post_id = null, $eager = false ) {
 	?>
 	<article class="pcard" data-kind="<?php echo esc_attr( $kind ); ?>">
 		<a class="pcard-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>">
-			<span class="pcard-media"><?php echo aria_product_image( $post_id, 'aria-card', array( 'alt' => get_the_title( $post_id ), 'loading' => $eager ? 'eager' : 'lazy', 'sizes' => '(min-width: 1100px) 280px, (min-width: 700px) 33vw, 50vw' ) ); // phpcs:ignore ?></span>
+			<span class="pcard-media"><?php echo aria_on_request( $post_id ) ? '<span class="pcard-badge">' . esc_html__( 'On request', 'aria' ) . '</span>' : ''; // phpcs:ignore ?><?php echo ( aria_on_request( $post_id ) && ! has_post_thumbnail( $post_id ) && ! get_post_meta( $post_id, '_aria_remote_thumb', true ) ) ? '<span class="onreq-media onreq-media--card">' . aria_icon( 'clock' ) . '<span>' . esc_html__( 'Sourced on request', 'aria' ) . '</span></span>' : aria_product_image( $post_id, 'aria-card', array( 'alt' => get_the_title( $post_id ), 'loading' => $eager ? 'eager' : 'lazy', 'sizes' => '(min-width: 1100px) 280px, (min-width: 700px) 33vw, 50vw' ) ); // phpcs:ignore ?></span>
 			<span class="pcard-body">
 				<h3 class="pcard-title"><?php echo esc_html( get_the_title( $post_id ) ); ?></h3>
 				<?php if ( $facts ) : ?>
@@ -203,6 +203,10 @@ function aria_yt_lite( $id, $title = '' ) {
 function aria_product_gallery( $post_id, $title ) {
 	$ids = aria_all_image_ids( $post_id );
 	echo '<div class="prod-media gallery" data-gallery>';
+	if ( ! $ids && ! get_post_meta( $post_id, '_aria_remote_thumb', true ) && aria_on_request( $post_id ) ) {
+		echo '<div class="gallery-main"><div class="onreq-media" role="img" aria-label="' . esc_attr( $title ) . '">' . aria_icon( 'clock' ) . '<strong>' . esc_html( $title ) . '</strong><span>' . esc_html__( 'Sourced on request · not in Dubai stock', 'aria' ) . '</span></div></div></div>'; // phpcs:ignore
+		return;
+	}
 	if ( ! $ids ) {
 		echo '<div class="gallery-main">' . aria_product_image( $post_id, 'large', array( 'alt' => $title, 'loading' => 'eager', 'fetchpriority' => 'high' ) ) . '</div></div>'; // phpcs:ignore
 		return;

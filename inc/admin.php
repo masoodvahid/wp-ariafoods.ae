@@ -106,6 +106,7 @@ function aria_box_product_data( $post ) {
 	<p><label for="aria_valid"><?php esc_html_e( 'Price valid until', 'aria' ); ?></label><input class="widefat" type="date" id="aria_valid" name="aria_valid" value="<?php echo esc_attr( $d['valid'] ); ?>"></p>
 	<p><label for="aria_availability"><?php esc_html_e( 'Availability', 'aria' ); ?></label>
 		<select class="widefat" id="aria_availability" name="aria_availability"><?php foreach ( aria_availability_options() as $k => $label ) : ?><option value="<?php echo esc_attr( $k ); ?>" <?php selected( $d['availability'], $k ); ?>><?php echo esc_html( $label ); ?></option><?php endforeach; ?></select></p>
+	<p><label for="aria_alternatives"><?php esc_html_e( 'Suggest instead (in-stock product slugs, comma separated)', 'aria' ); ?></label><input class="widefat" id="aria_alternatives" name="aria_alternatives" value="<?php echo esc_attr( (string) get_post_meta( $post->ID, '_aria_alternatives', true ) ); ?>" placeholder="zahedi-dates, piarom-dates"><span class="description"><?php esc_html_e( 'Shown when availability is “sourced on request”.', 'aria' ); ?></span></p>
 	<p><label><input type="checkbox" name="aria_show_price" value="1" <?php checked( $d['show_price'] ); ?>> <?php esc_html_e( 'Show the price on the product page', 'aria' ); ?></label></p>
 	<p class="description"><?php esc_html_e( 'With a price, the Product schema includes an Offer, which Google needs to show product rich results. Without one, the schema still describes the product.', 'aria' ); ?></p>
 	<?php
@@ -170,6 +171,7 @@ add_action( 'save_post_product', function ( $post_id ) {
 	update_post_meta( $post_id, '_aria_valid', preg_match( '/^\d{4}-\d{2}-\d{2}$/', $_POST['aria_valid'] ?? '' ) ? $_POST['aria_valid'] : '' ); // phpcs:ignore
 	update_post_meta( $post_id, '_aria_availability', array_key_exists( $_POST['aria_availability'] ?? '', aria_availability_options() ) ? $_POST['aria_availability'] : 'InStock' ); // phpcs:ignore
 	update_post_meta( $post_id, '_aria_show_price', empty( $_POST['aria_show_price'] ) ? 0 : 1 );
+	update_post_meta( $post_id, '_aria_alternatives', implode( ',', array_filter( array_map( 'sanitize_title', explode( ',', (string) wp_unslash( $_POST['aria_alternatives'] ?? '' ) ) ) ) ) );
 	$ids = array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['aria_gallery'] ?? '' ) ) ) );
 	update_post_meta( $post_id, '_aria_gallery', array_values( array_unique( $ids ) ) );
 } );

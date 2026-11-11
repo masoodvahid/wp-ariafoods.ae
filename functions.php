@@ -37,6 +37,7 @@ if ( is_admin() ) {
 	require ARIA_DIR . '/inc/admin.php';
 	require ARIA_DIR . '/inc/settings.php';
 	require ARIA_DIR . '/inc/dashboard.php';
+	require ARIA_DIR . '/inc/products-on-request.php';
 	require ARIA_DIR . '/inc/importer.php';
 	require ARIA_DIR . '/inc/migrate.php';
 	require ARIA_DIR . '/inc/domain.php';

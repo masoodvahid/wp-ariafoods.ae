@@ -60,7 +60,7 @@ aria_page_head( $title, $lead );
 					}
 					?>
 					<tr>
-						<th scope="row"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></th>
+						<th scope="row"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a><?php echo aria_on_request( get_the_ID() ) ? ' <span class="tag-onreq">' . esc_html__( 'On request', 'aria' ) . '</span>' : ''; // phpcs:ignore ?></th>
 						<td><?php echo esc_html( aria_spec( get_the_ID(), 'moist' ) ); ?></td>
 						<td><?php echo esc_html( aria_spec( get_the_ID(), '^size' ) ); ?></td>
 						<td><?php echo esc_html( aria_spec( get_the_ID(), 'harvest' ) ); ?></td>

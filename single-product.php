@@ -19,6 +19,8 @@ while ( have_posts() ) :
 	$content = apply_filters( 'the_content', get_the_content() );
 	$toc     = aria_toc( $content );
 	$is_var  = aria_is_variety( $id );
+	$onreq   = aria_on_request( $id );
+	$alts    = $onreq ? aria_alternatives( $id ) : array();
 	?>
 	<article class="product">
 		<header class="prod-head">
@@ -55,8 +57,25 @@ while ( have_posts() ) :
 							<?php endforeach; ?>
 						</dl>
 					<?php endif; ?>
+					<?php if ( $onreq ) : ?>
+						<div class="onreq" role="note">
+							<p class="onreq-tag"><?php echo aria_icon( 'clock' ); // phpcs:ignore ?> <?php esc_html_e( 'Not in our Dubai stock – sourced on request', 'aria' ); ?></p>
+							<p><?php echo esc_html( sprintf( __( 'We don’t hold %s in our Dubai warehouse right now, but we can source it for you. Tell us grade, packing and volume and we confirm availability, price and lead time.', 'aria' ), $title ) ); ?></p>
+							<?php if ( $alts ) : ?>
+								<p class="onreq-alt"><strong><?php esc_html_e( 'Need dates now?', 'aria' ); ?></strong>
+									<?php
+									$links = array_map( function ( $a ) {
+										return '<a href="' . esc_url( get_permalink( $a ) ) . '">' . esc_html( get_the_title( $a ) ) . '</a>';
+									}, $alts );
+									/* translators: 1: product, 2: in-stock alternatives */
+									echo wp_kses_post( sprintf( __( 'Instead of %1$s we can ship %2$s from our Dubai warehouse today.', 'aria' ), esc_html( $title ), implode( ' ' . esc_html__( 'or', 'aria' ) . ' ', $links ) ) );
+									?>
+								</p>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
 					<div class="hero-ctas">
-						<a class="btn btn--primary btn--lg" href="#quote" data-product="<?php echo esc_attr( $title ); ?>"><?php esc_html_e( 'Request a quote', 'aria' ); ?></a>
+						<a class="btn btn--primary btn--lg" href="#quote" data-quote-open data-product="<?php echo esc_attr( $title ); ?>"><?php echo $onreq ? esc_html__( 'Ask us to source it', 'aria' ) : esc_html__( 'Request a quote', 'aria' ); ?></a>
 						<a class="btn btn--outline btn--lg" href="<?php echo esc_url( aria_wa_url( sprintf( 'Hello Aria Foods, I would like a price for %s.', $title ) ) ); ?>" target="_blank" rel="noopener"><?php echo aria_icon( 'whatsapp' ); // phpcs:ignore ?> WhatsApp</a>
 					</div>
 					<p class="prod-note"><a href="<?php echo esc_url( home_url( '/sample-request/' ) ); ?>"><?php esc_html_e( 'Request a sample', 'aria' ); ?></a> · <a href="<?php echo esc_url( aria_opt( 'catalogue' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Catalogue (PDF)', 'aria' ); ?></a></p>
@@ -126,8 +145,29 @@ while ( have_posts() ) :
 			</div>
 		</div>
 
+		<?php if ( $onreq ) :
+			$stock = aria_in_stock_dates();
+			$first = array_values( array_unique( array_merge( $alts, $stock ) ) );
+			?>
+			<section class="section section--tint" aria-labelledby="stock-title">
+				<div class="wrap">
+					<div class="section-head">
+						<h2 id="stock-title"><?php esc_html_e( 'In our Dubai warehouse – ships today', 'aria' ); ?></h2>
+						<p><?php echo esc_html( sprintf( __( 'Instead of waiting for %s, choose one of these date varieties. Full containers, loaded within days of payment.', 'aria' ), $title ) ); ?></p>
+					</div>
+					<div class="pgrid pgrid--4">
+						<?php
+						foreach ( $first as $sid ) {
+							aria_product_card( $sid );
+						}
+						?>
+					</div>
+				</div>
+			</section>
+		<?php endif; ?>
+
 		<?php
-		$related = get_posts( array(
+		$related = $onreq ? array() : get_posts( array(
 			'post_type'      => 'product',
 			'posts_per_page' => 4,
 			'post__not_in'   => array( $id ),
