@@ -68,7 +68,8 @@ while ( have_posts() ) :
 										return '<a href="' . esc_url( get_permalink( $a ) ) . '">' . esc_html( get_the_title( $a ) ) . '</a>';
 									}, $alts );
 									/* translators: 1: product, 2: in-stock alternatives */
-									echo wp_kses_post( sprintf( __( 'Instead of %1$s we can ship %2$s from our Dubai warehouse today.', 'aria' ), esc_html( $title ), implode( ' ' . esc_html__( 'or', 'aria' ) . ' ', $links ) ) );
+									echo wp_kses_post( sprintf( __( 'Instead of %1$s we can load %2$s from our Dubai warehouse within days.', 'aria' ), esc_html( $title ), implode( ' ' . esc_html__( 'or', 'aria' ) . ' ', $links ) ) );
+									echo ' <a href="#stock-title">' . esc_html__( 'Compare →', 'aria' ) . '</a>';
 									?>
 								</p>
 							<?php endif; ?>
@@ -146,22 +147,83 @@ while ( have_posts() ) :
 		</div>
 
 		<?php if ( $onreq ) :
-			$stock = aria_in_stock_dates();
-			$first = array_values( array_unique( array_merge( $alts, $stock ) ) );
+			$notes = (array) get_post_meta( $id, '_aria_alt_notes', true );
+			$stock = array_values( array_diff( aria_in_stock_dates(), $alts ) );
 			?>
-			<section class="section section--tint" aria-labelledby="stock-title">
+			<section class="section section--tint stock-alt" aria-labelledby="stock-title">
 				<div class="wrap">
 					<div class="section-head">
-						<h2 id="stock-title"><?php esc_html_e( 'In our Dubai warehouse – ships today', 'aria' ); ?></h2>
-						<p><?php echo esc_html( sprintf( __( 'Instead of waiting for %s, choose one of these date varieties. Full containers, loaded within days of payment.', 'aria' ), $title ) ); ?></p>
+						<p class="kicker"><?php esc_html_e( 'Ready in Dubai', 'aria' ); ?></p>
+						<h2 id="stock-title"><?php echo esc_html( sprintf( __( 'Need dates now? Ship from our Dubai stock instead of %s', 'aria' ), $title ) ); ?></h2>
 					</div>
-					<div class="pgrid pgrid--4">
-						<?php
-						foreach ( $first as $sid ) {
-							aria_product_card( $sid );
-						}
-						?>
+
+					<div class="sa-compare">
+						<div class="sa-opt sa-opt--wait">
+							<span class="sa-ic"><?php echo aria_icon( 'clock' ); // phpcs:ignore ?></span>
+							<div>
+								<h3><?php echo esc_html( sprintf( __( '%s – sourced on request', 'aria' ), $title ) ); ?></h3>
+								<ul>
+									<li><?php esc_html_e( 'We check availability with growers and packers in Iran', 'aria' ); ?></li>
+									<li><?php esc_html_e( 'Price and lead time confirmed per order', 'aria' ); ?></li>
+									<li><?php esc_html_e( 'Best for planned orders with time to spare', 'aria' ); ?></li>
+								</ul>
+							</div>
+						</div>
+						<div class="sa-opt sa-opt--now">
+							<span class="sa-ic"><?php echo aria_icon( 'container' ); // phpcs:ignore ?></span>
+							<div>
+								<h3><?php esc_html_e( 'From our Dubai warehouse', 'aria' ); ?></h3>
+								<ul>
+									<li><?php esc_html_e( 'Already graded and packed – no waiting for production', 'aria' ); ?></li>
+									<li><?php esc_html_e( 'Loaded within a few working days of payment', 'aria' ); ?></li>
+									<li><?php esc_html_e( 'Fixed price, UAE invoice, documents ready before loading', 'aria' ); ?></li>
+								</ul>
+							</div>
+						</div>
 					</div>
+
+					<?php if ( $alts ) : ?>
+						<h3 class="sa-sub"><?php echo esc_html( sprintf( __( 'Closest to %s', 'aria' ), $title ) ); ?></h3>
+						<div class="sa-alts">
+							<?php foreach ( $alts as $a ) :
+								$aslug = get_post_field( 'post_name', $a );
+								$atitle = get_the_title( $a );
+								$note  = isset( $notes[ $aslug ] ) ? $notes[ $aslug ] : get_the_excerpt( $a );
+								$af    = aria_card_facts( $a );
+								?>
+								<article class="sa-card">
+									<a class="sa-media" href="<?php echo esc_url( get_permalink( $a ) ); ?>" tabindex="-1" aria-hidden="true"><?php echo aria_product_image( $a, 'aria-card', array( 'alt' => '' ) ); // phpcs:ignore ?></a>
+									<div class="sa-body">
+										<p class="sa-flag"><?php echo aria_icon( 'check' ); // phpcs:ignore ?> <?php esc_html_e( 'In Dubai stock', 'aria' ); ?></p>
+										<h4><a href="<?php echo esc_url( get_permalink( $a ) ); ?>"><?php echo esc_html( $atitle ); ?></a></h4>
+										<p class="sa-why"><?php echo esc_html( $note ); ?></p>
+										<?php if ( $af ) : ?>
+											<dl class="sa-facts"><?php foreach ( $af as $k => $v ) : ?><div><dt><?php echo esc_html( $k ); ?></dt><dd><?php echo esc_html( $v ); ?></dd></div><?php endforeach; ?></dl>
+										<?php endif; ?>
+										<p class="sa-ctas">
+											<button type="button" class="btn btn--primary" data-quote-open data-product="<?php echo esc_attr( $atitle ); ?>"><?php esc_html_e( 'Get a price', 'aria' ); ?></button>
+											<a class="btn btn--outline" href="<?php echo esc_url( get_permalink( $a ) ); ?>"><?php esc_html_e( 'View product', 'aria' ); ?></a>
+										</p>
+									</div>
+								</article>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $stock ) : ?>
+						<h3 class="sa-sub"><?php esc_html_e( 'All date varieties in Dubai stock', 'aria' ); ?></h3>
+						<ul class="sa-list">
+							<?php foreach ( $stock as $sid ) :
+								$sf = aria_card_facts( $sid );
+								?>
+								<li><a href="<?php echo esc_url( get_permalink( $sid ) ); ?>">
+									<span class="sa-thumb"><?php echo aria_product_image( $sid, 'thumbnail', array( 'alt' => '' ) ); // phpcs:ignore ?></span>
+									<span><strong><?php echo esc_html( get_the_title( $sid ) ); ?></strong><?php if ( isset( $sf['Moisture'] ) ) : ?><small><?php echo esc_html( __( 'Moisture', 'aria' ) . ' ' . $sf['Moisture'] ); ?></small><?php endif; ?></span>
+								</a></li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+					<p class="sa-note"><?php esc_html_e( 'Not sure which to choose? Send us your market and use – our trade desk recommends the closest match and can send samples.', 'aria' ); ?> <a href="<?php echo esc_url( aria_wa_url( sprintf( 'Hello Aria Foods, I was looking for %s. Which date from your Dubai stock is closest?', $title ) ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Ask on WhatsApp', 'aria' ); ?></a></p>
 				</div>
 			</section>
 		<?php endif; ?>

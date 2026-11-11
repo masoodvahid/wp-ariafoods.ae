@@ -760,3 +760,39 @@ html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:
 .tag-onreq{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:var(--tint);border:1px solid var(--line);color:var(--muted);font-size:.72rem;font-weight:600;vertical-align:2px}
 .pcard-media .img-placeholder{display:block;width:100%;height:100%}
 .onreq-media--card{height:100%;aspect-ratio:auto;gap:6px}.onreq-media--card svg{width:30px;height:30px}
+/* "Ready in Dubai" block on on-request varieties */
+.stock-alt .kicker{margin:0 0 6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;color:var(--syrup)}
+.sa-compare{display:grid;gap:14px;margin:6px 0 34px}
+@media (min-width:800px){.sa-compare{grid-template-columns:1fr 1fr}}
+.sa-opt{display:flex;gap:14px;padding:20px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.sa-opt--wait{background:transparent;border-style:dashed}
+.sa-opt--now{border-color:color-mix(in srgb,var(--palm) 45%,var(--line));box-shadow:0 14px 34px -26px rgba(var(--sh),.6)}
+.sa-ic{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--syrup)}
+.sa-opt--now .sa-ic{background:color-mix(in srgb,var(--palm) 14%,var(--surface));color:var(--palm)}
+.sa-ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.sa-opt h3{margin:2px 0 8px;font-size:1.05rem}
+.sa-opt ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;color:var(--muted);font-size:.95rem}
+.sa-opt li{position:relative;padding-left:16px}.sa-opt li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.sa-opt--now li::before{background:var(--palm);opacity:1}
+.sa-sub{font-size:1.15rem;margin:0 0 14px}
+.sa-alts{display:grid;gap:16px;margin-bottom:34px}
+@media (min-width:900px){.sa-alts{grid-template-columns:1fr 1fr}}
+.sa-card{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;padding:16px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
+@media (max-width:520px){.sa-card{grid-template-columns:76px minmax(0,1fr);gap:14px;padding:14px}.sa-ctas .btn{flex:1;justify-content:center}}
+.sa-media{display:block;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--surface-2)}
+.sa-media img{width:100%;height:100%;object-fit:cover}
+.sa-flag{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:2px 10px 2px 8px;border-radius:99px;font-size:.78rem;font-weight:600;color:var(--palm);background:color-mix(in srgb,var(--palm) 11%,var(--surface))}
+.sa-flag svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.4}
+.sa-card h4{margin:0 0 6px;font-size:1.15rem}.sa-card h4 a{color:inherit;text-decoration:none}
+.sa-why{margin:0 0 10px;color:var(--muted);font-size:.95rem;line-height:1.55}
+.sa-facts{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 12px;font-size:.85rem}
+.sa-facts div{display:flex;gap:6px}.sa-facts dt{color:var(--muted)}.sa-facts dd{margin:0;font-weight:600}
+.sa-ctas{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.sa-ctas .btn{padding:9px 16px;font-size:.9rem}
+.sa-list{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.sa-list a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
+.sa-list a:hover{border-color:var(--syrup);transform:translateY(-1px)}
+.sa-thumb{flex:none;width:44px;height:44px;border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.sa-thumb img{width:100%;height:100%;object-fit:cover}
+.sa-list strong{display:block;font-size:.95rem}.sa-list small{display:block;color:var(--muted);font-size:.8rem}
+.sa-note{margin:0;color:var(--muted);font-size:.95rem}
