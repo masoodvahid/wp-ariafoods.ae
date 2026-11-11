@@ -130,7 +130,7 @@ function aria_qty_bucket( $q ) {
 /** All numbers the widgets need, cached for 10 minutes. */
 function aria_dash_data() {
 	$data = get_transient( 'aria_dash' );
-	if ( false !== $data ) {
+	if ( false !== $data && isset( $data['trend'] ) ) {
 		return $data;
 	}
 	global $wpdb;
@@ -144,9 +144,11 @@ function aria_dash_data() {
 		GROUP BY p.ID" );
 
 	$months = array();
+	$trend  = array();
 	for ( $i = 11; $i >= 0; $i-- ) {
 		$k            = wp_date( 'Y-m', strtotime( "first day of -$i month", current_time( 'timestamp' ) ) ); // phpcs:ignore
 		$months[ $k ] = array( '20' => 0, '40' => 0, 'multi' => 0, 'big' => 0, 'none' => 0 );
+		$trend[ $k ]  = array( 'all' => 0, 'orders' => 0 );
 	}
 	$status  = array_fill_keys( aria_lead_statuses(), 0 );
 	$dest    = array();
@@ -183,6 +185,10 @@ function aria_dash_data() {
 		$d = is_array( $d ) ? $d : array();
 		if ( isset( $months[ $mk ] ) ) {
 			++$months[ $mk ][ aria_qty_bucket( isset( $d['Quantity'] ) ? $d['Quantity'] : '' ) ];
+			++$trend[ $mk ]['all'];
+			if ( in_array( $st, array( 'Order confirmed', 'In production', 'Shipped' ), true ) ) {
+				++$trend[ $mk ]['orders'];
+			}
 		}
 		$vc = aria_country_name( (string) $r->ipc );
 		$dc = aria_guess_country( isset( $d['Port / country'] ) ? $d['Port / country'] : '' );
@@ -193,7 +199,7 @@ function aria_dash_data() {
 	}
 	arsort( $dest );
 	arsort( $visitor );
-	$data = compact( 'months', 'status', 'dest', 'visitor', 'c' );
+	$data = compact( 'months', 'trend', 'status', 'dest', 'visitor', 'c' );
 	set_transient( 'aria_dash', $data, 10 * MINUTE_IN_SECONDS );
 	return $data;
 }
@@ -423,3 +429,117 @@ add_action( 'admin_footer-index.php', function () {
 	</script>
 	<?php
 } );
+
+/**
+ * Line chart: inquiries and confirmed orders per month (last 12 months). Used on the Inquiries screen.
+ * Orders = inquiries whose status is Order confirmed, In production or Shipped (counted in the month the inquiry came in).
+ */
+function aria_trend_chart() {
+	$d      = aria_dash_data();
+	$t      = $d['trend'];
+	$keys   = array_keys( $t );
+	$n      = count( $keys );
+	$max    = 1;
+	foreach ( $t as $v ) {
+		$max = max( $max, $v['all'] );
+	}
+	$top    = max( 4, (int) ceil( $max / 4 ) * 4 );
+	$w      = 1000;
+	$h      = 220;
+	$pl     = 34;
+	$pr     = 70;
+	$pt     = 14;
+	$pb     = 28;
+	$x      = function ( $i ) use ( $n, $w, $pl, $pr ) {
+		return $pl + ( $n > 1 ? $i * ( $w - $pl - $pr ) / ( $n - 1 ) : 0 );
+	};
+	$y      = function ( $v ) use ( $top, $h, $pt, $pb ) {
+		return $h - $pb - ( $v / $top ) * ( $h - $pt - $pb );
+	};
+	$series = array(
+		'all'    => array( __( 'Inquiries', 'aria' ), '#2a78d6' ),
+		'orders' => array( __( 'Orders', 'aria' ), '#eb6834' ),
+	);
+	$tot_all = array_sum( wp_list_pluck( $t, 'all' ) );
+	$tot_ord = array_sum( wp_list_pluck( $t, 'orders' ) );
+	?>
+	<div class="at-card">
+		<div class="at-head">
+			<div><h2><span class="dashicons dashicons-chart-line" aria-hidden="true"></span> <?php esc_html_e( 'Monthly trend', 'aria' ); ?></h2>
+				<p><?php echo esc_html( sprintf( __( 'Last 12 months: %1$d inquiries, %2$d became orders', 'aria' ), $tot_all, $tot_ord ) ); ?></p></div>
+			<ul class="at-legend"><?php foreach ( $series as $s ) : ?><li><i style="background:<?php echo esc_attr( $s[1] ); ?>"></i><?php echo esc_html( $s[0] ); ?></li><?php endforeach; ?></ul>
+		</div>
+		<div class="at-chart">
+			<svg viewBox="0 0 <?php echo (int) $w; ?> <?php echo (int) $h; ?>" preserveAspectRatio="none" role="img" aria-label="<?php esc_attr_e( 'Line chart of inquiries and orders per month', 'aria' ); ?>">
+				<?php for ( $g = 0; $g <= 4; $g++ ) : $gy = $y( $top * $g / 4 ); ?>
+					<line x1="<?php echo (int) $pl; ?>" x2="<?php echo (int) ( $w - $pr ); ?>" y1="<?php echo esc_attr( $gy ); ?>" y2="<?php echo esc_attr( $gy ); ?>" stroke="#f0f0f1" stroke-width="1" vector-effect="non-scaling-stroke"/>
+				<?php endfor; ?>
+				<?php foreach ( $series as $sk => $s ) :
+					$pts = array();
+					foreach ( $keys as $i => $k ) {
+						$pts[] = round( $x( $i ), 1 ) . ',' . round( $y( $t[ $k ][ $sk ] ), 1 );
+					}
+					if ( 'all' === $sk ) : ?>
+						<polygon points="<?php echo esc_attr( $pl . ',' . $y( 0 ) . ' ' . implode( ' ', $pts ) . ' ' . $x( $n - 1 ) . ',' . $y( 0 ) ); ?>" fill="<?php echo esc_attr( $s[1] ); ?>" fill-opacity=".08"/>
+					<?php endif; ?>
+					<polyline points="<?php echo esc_attr( implode( ' ', $pts ) ); ?>" fill="none" stroke="<?php echo esc_attr( $s[1] ); ?>" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+				<?php endforeach; ?>
+				<line class="at-cross" x1="0" x2="0" y1="<?php echo (int) $pt; ?>" y2="<?php echo (int) ( $h - $pb ); ?>" stroke="#8c8f94" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" visibility="hidden"/>
+			</svg>
+			<?php // Axis labels, dots and end labels as HTML so they keep their size when the SVG stretches. ?>
+			<div class="at-y"><?php for ( $g = 0; $g <= 4; $g++ ) : ?><span style="top:<?php echo esc_attr( $y( $top * $g / 4 ) / $h * 100 ); ?>%"><?php echo (int) ( $top * $g / 4 ); ?></span><?php endfor; ?></div>
+			<?php foreach ( $keys as $i => $k ) : ?>
+				<span class="at-x" style="left:<?php echo esc_attr( $x( $i ) / $w * 100 ); ?>%"><?php echo esc_html( wp_date( 'M', strtotime( $k . '-01' ) ) ); ?></span>
+				<?php foreach ( $series as $sk => $s ) : ?>
+					<i class="at-dot" data-i="<?php echo (int) $i; ?>" style="left:<?php echo esc_attr( $x( $i ) / $w * 100 ); ?>%;top:<?php echo esc_attr( $y( $t[ $k ][ $sk ] ) / $h * 100 ); ?>%;background:<?php echo esc_attr( $s[1] ); ?>"></i>
+				<?php endforeach; ?>
+			<?php endforeach; ?>
+			<?php foreach ( $series as $sk => $s ) : $last = $t[ $keys[ $n - 1 ] ][ $sk ]; ?>
+				<span class="at-end" style="top:<?php echo esc_attr( $y( $last ) / $h * 100 ); ?>%"><?php echo esc_html( $s[0] . ' ' . $last ); ?></span>
+			<?php endforeach; ?>
+			<div class="at-hit" data-n="<?php echo (int) $n; ?>" data-l="<?php echo esc_attr( $pl / $w ); ?>" data-r="<?php echo esc_attr( $pr / $w ); ?>"
+				data-rows="<?php echo esc_attr( wp_json_encode( array_map( function ( $k ) use ( $t ) {
+					return array( wp_date( 'F Y', strtotime( $k . '-01' ) ), $t[ $k ]['all'], $t[ $k ]['orders'] );
+				}, $keys ) ) ); ?>"></div>
+			<div class="at-tip" hidden></div>
+		</div>
+	</div>
+	<style>
+	.at-card{background:#fff;border:1px solid #e3e5e8;border-radius:10px;padding:14px 18px 10px}
+	.at-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+	.at-head h2{margin:0;font-size:14px;display:flex;align-items:center;gap:6px}.at-head h2 .dashicons{color:#2a78d6}
+	.at-head p{margin:2px 0 0;color:#646970;font-size:12px}
+	.at-legend{display:flex;gap:14px;margin:0;font-size:12px}.at-legend li{margin:0;display:flex;align-items:center;gap:6px}.at-legend i{width:14px;height:3px;border-radius:2px}
+	.at-chart{position:relative;height:220px;margin:8px 0 0}
+	.at-chart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+	.at-y span{position:absolute;left:0;width:26px;text-align:right;transform:translateY(-50%);font-size:11px;color:#8c8f94;font-variant-numeric:tabular-nums}
+	.at-x{position:absolute;bottom:0;transform:translateX(-50%);font-size:11px;color:#646970}
+	.at-dot{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;border:2px solid #fff;box-sizing:content-box;transform:scale(.75);transition:transform .1s}
+	.at-dot.is-on{transform:scale(1.2)}
+	.at-end{position:absolute;right:0;transform:translateY(-50%);font-size:11px;color:#3c434a;width:64px;white-space:nowrap}
+	.at-hit{position:absolute;inset:0 0 24px}
+	.at-tip{position:absolute;top:0;z-index:3;pointer-events:none;background:#1d2327;color:#fff;font-size:12px;line-height:1.55;padding:7px 10px;border-radius:6px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+	.at-tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+	</style>
+	<script>
+	(function () {
+		var hit = document.querySelector('.at-hit'); if (!hit) return;
+		var box = hit.parentNode, tip = box.querySelector('.at-tip'), cross = box.querySelector('.at-cross');
+		var rows = JSON.parse(hit.dataset.rows), n = +hit.dataset.n, l = +hit.dataset.l, r = +hit.dataset.r;
+		hit.addEventListener('mousemove', function (e) {
+			var b = box.getBoundingClientRect(), f = (e.clientX - b.left) / b.width;
+			var i = Math.max(0, Math.min(n - 1, Math.round((f - l) / (1 - l - r) * (n - 1))));
+			var px = (l + (n > 1 ? i / (n - 1) : 0) * (1 - l - r));
+			cross.setAttribute('x1', px * 1000); cross.setAttribute('x2', px * 1000); cross.setAttribute('visibility', 'visible');
+			box.querySelectorAll('.at-dot').forEach(function (d) { d.classList.toggle('is-on', +d.dataset.i === i); });
+			var row = rows[i];
+			tip.innerHTML = '<strong>' + row[0] + '</strong><br><i style="background:#2a78d6"></i>Inquiries: ' + row[1] + '<br><i style="background:#eb6834"></i>Orders: ' + row[2];
+			tip.hidden = false;
+			var x = px * b.width + 12; if (x + tip.offsetWidth > b.width) x = px * b.width - tip.offsetWidth - 12;
+			tip.style.left = x + 'px';
+		});
+		hit.addEventListener('mouseleave', function () { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); box.querySelectorAll('.at-dot').forEach(function (d) { d.classList.remove('is-on'); }); });
+	})();
+	</script>
+	<?php
+}

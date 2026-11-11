@@ -301,17 +301,22 @@ add_action( 'all_admin_notices', function () {
 	}
 	$base  = admin_url( 'edit.php?post_type=aria_lead' );
 	$cards = array(
-		array( __( 'New – reply needed', 'aria' ), $c['new'], add_query_arg( 'al_status', 'Received', $base ), '#b0592a' ),
-		array( __( 'Quoted / sample sent', 'aria' ), $c['open'], add_query_arg( 'al_status', 'Quoted', $base ), '#2f6fb3' ),
-		array( __( 'Orders in progress', 'aria' ), $c['won'], add_query_arg( 'al_status', 'Order confirmed', $base ), '#1f8a5b' ),
-		array( __( 'This month', 'aria' ), $c['month'], $base, '#555' ),
-		array( __( 'Spam caught', 'aria' ), $c['spam'], add_query_arg( 'al_status', 'Spam', $base ), '#a33' ),
+		array( __( 'New – reply needed', 'aria' ), $c['new'], add_query_arg( 'al_status', 'Received', $base ), '#b0592a', 'email-alt' ),
+		array( __( 'Quoted / sample sent', 'aria' ), $c['open'], add_query_arg( 'al_status', 'Quoted', $base ), '#2f6fb3', 'format-chat' ),
+		array( __( 'Orders in progress', 'aria' ), $c['won'], add_query_arg( 'al_status', 'Order confirmed', $base ), '#1f8a5b', 'cart' ),
+		array( __( 'This month', 'aria' ), $c['month'], $base, '#555', 'calendar-alt' ),
+		array( __( 'Spam caught', 'aria' ), $c['spam'], add_query_arg( 'al_status', 'Spam', $base ), '#a33', 'shield-alt' ),
 	);
 	echo '<div class="notice al-cards">';
 	foreach ( $cards as $cd ) {
-		echo '<a class="al-card" style="--c:' . esc_attr( $cd[3] ) . '" href="' . esc_url( $cd[2] ) . '"><strong>' . (int) $cd[1] . '</strong><span>' . esc_html( $cd[0] ) . '</span></a>';
+		echo '<a class="al-card" style="--c:' . esc_attr( $cd[3] ) . '" href="' . esc_url( $cd[2] ) . '"><span class="al-ic dashicons dashicons-' . esc_attr( $cd[4] ) . '" aria-hidden="true"></span><span class="al-cv"><strong>' . (int) $cd[1] . '</strong><span>' . esc_html( $cd[0] ) . '</span></span></a>';
 	}
 	echo '</div>';
+	if ( function_exists( 'aria_trend_chart' ) ) {
+		echo '<div class="notice al-trend-wrap">';
+		aria_trend_chart();
+		echo '</div>';
+	}
 } );
 
 /* Quick status change from the list. */
@@ -457,8 +462,12 @@ add_action( 'admin_head', function () {
 	.al-muted{color:#6b6f76}.al-small{font-size:12px}
 	.al-ico{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:50%;background:#f3f4f6;margin-right:4px;text-decoration:none}.al-ico:hover{background:#e7e9ee}.al-wa{color:#1f9d55}
 	.al-cards.notice{border:0;background:none;box-shadow:none;padding:0}.al-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0 4px;max-width:1100px}
-	.al-card{display:flex;flex-direction:column;gap:2px;padding:14px 16px;background:#fff;border:1px solid #e3e5e8;border-left:4px solid var(--c);border-radius:8px;text-decoration:none;color:#1d2327}
-	.al-card strong{font-size:24px;line-height:1.1;color:var(--c)}.al-card span{font-size:12px;color:#50575e}.al-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+	.al-card{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid #e3e5e8;border-radius:10px;text-decoration:none;color:#1d2327;transition:box-shadow .15s,border-color .15s}
+	.al-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.07);border-color:color-mix(in srgb,var(--c) 35%,#e3e5e8)}
+	.al-ic.dashicons{flex:none;width:40px;height:40px;font-size:22px;line-height:40px;text-align:center;border-radius:10px;color:var(--c);background:color-mix(in srgb,var(--c) 11%,#fff)}
+	.al-cv{display:flex;flex-direction:column;gap:1px;min-width:0}.al-cards a.al-card,.al-cards a.al-card *{text-decoration:none!important}
+	.al-card strong{font-size:22px;line-height:1.1;color:#1d2327;font-variant-numeric:tabular-nums}.al-cv span{font-size:12px;color:#50575e;line-height:1.3}
+	.al-trend-wrap.notice{border:0;background:none;box-shadow:none;padding:0;margin:4px 0 14px;max-width:1100px}
 	.wp-list-table .column-al_status{width:160px}.wp-list-table .column-al_contact{width:130px}.wp-list-table .column-al_date{width:110px}
 	.wp-list-table.posts .row-title{font-size:14px}
 	.al-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;padding:4px 0 14px;border-bottom:1px solid #eee;margin-bottom:14px}
