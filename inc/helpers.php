@@ -335,11 +335,7 @@ function aria_display_address() {
 	return aria_opt( 'address' );
 }
 
-/* Site e-mails come from noreply@<this domain> instead of wordpress@. */
-add_filter( 'wp_mail_from', function ( $from ) {
-	$host = preg_replace( '/^www\./', '', (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
-	return ( 0 === strpos( $from, 'wordpress@' ) && $host ) ? 'noreply@' . $host : $from;
-} );
+/* Site e-mail sender and delivery: see inc/mail.php. */
 add_filter( 'wp_mail_from_name', function ( $name ) {
 	return 'WordPress' === $name ? aria_opt( 'company' ) : $name;
 } );

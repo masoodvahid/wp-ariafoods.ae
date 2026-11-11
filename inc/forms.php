@@ -55,7 +55,8 @@ function aria_form( $type = 'quote', $args = array() ) {
 	<form class="form form--<?php echo esc_attr( $type ); ?>" id="<?php echo esc_attr( $args['id'] ); ?>" action="<?php echo $action; ?>" method="post" data-ajax-form novalidate>
 		<input type="hidden" name="aria_inquiry" value="1">
 		<input type="hidden" name="type" value="<?php echo esc_attr( $type ); ?>">
-		<input type="hidden" name="ts" value="<?php echo esc_attr( base64_encode( (string) time() ) ); ?>">
+		<input type="hidden" name="ts" value="<?php echo esc_attr( aria_form_token() ); ?>">
+		<input type="hidden" name="human" value="">
 		<input type="hidden" name="page" value="">
 		<div class="hp" aria-hidden="true"><label>Leave empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 		<div class="form-grid">
@@ -95,6 +96,9 @@ function aria_form( $type = 'quote', $args = array() ) {
 			<p class="field field--full"><label for="<?php echo esc_attr( $args['id'] ); ?>-msg"><?php echo 'contact' === $type ? esc_html__( 'Message', 'aria' ) : esc_html__( 'Specifications or notes', 'aria' ); ?> <?php if ( 'contact' !== $type ) : ?><span class="opt"><?php esc_html_e( '(optional)', 'aria' ); ?></span><?php endif; ?></label><textarea id="<?php echo esc_attr( $args['id'] ); ?>-msg" name="message" rows="<?php echo $args['compact'] ? 2 : 4; ?>" <?php echo 'contact' === $type ? 'required' : ''; ?> placeholder="<?php echo 'quote' === $type ? esc_attr__( 'Grade, packing, Brix, labelling, delivery date…', 'aria' ) : ''; ?>"></textarea></p>
 		</div>
 		<div class="form-foot">
+			<?php if ( aria_turnstile_keys() ) : ?>
+				<div class="field field--full cf-box" data-turnstile="<?php echo esc_attr( aria_turnstile_site() ); ?>"></div>
+			<?php endif; ?>
 			<button class="btn btn--primary" type="submit"><?php echo esc_html( $labels[ $type ] ); ?></button>
 			<p class="form-note"><?php echo 'quote' === $type ? esc_html__( 'We reply within one working day. Full containers only – minimum order one 20 ft container.', 'aria' ) : esc_html__( 'We reply within one working day. Wholesale and export orders only.', 'aria' ); ?></p>
 		</div>
@@ -132,10 +136,15 @@ function aria_handle_inquiry() {
 
 	$type = in_array( $f['type'], array( 'quote', 'sample', 'contact', 'tracking' ), true ) ? $f['type'] : 'quote';
 
-	// Bots: honeypot filled, or submitted faster than 3 seconds.
-	$started = (int) base64_decode( (string) $f['ts'] );
-	if ( '' !== trim( $f['website'] ) || ( $started && time() - $started < 3 ) ) {
-		$fail( __( 'Your request could not be sent. Please try again in a few seconds.', 'aria' ) );
+	// Bots: honeypot filled, missing or forged form token, sent too fast, or no human interaction (JS).
+	$started = aria_form_token_time( $f['ts'] );
+	if ( '' !== trim( $f['website'] ) || ! $started || time() - $started < 4 || time() - $started > 3 * DAY_IN_SECONDS
+		|| ! hash_equals( aria_human_value( $f['ts'] ), (string) ( isset( $_POST['human'] ) ? wp_unslash( $_POST['human'] ) : '' ) ) ) { // phpcs:ignore
+		$fail( __( 'Your request could not be sent. Please reload the page and try again.', 'aria' ) );
+	}
+	// Cloudflare Turnstile, when keys are set.
+	if ( aria_turnstile_keys() && ! aria_turnstile_ok( isset( $_POST['cf-turnstile-response'] ) ? sanitize_text_field( wp_unslash( $_POST['cf-turnstile-response'] ) ) : '' ) ) { // phpcs:ignore
+		$fail( __( 'Please complete the security check and send again.', 'aria' ) );
 	}
 
 	// Rate limit: 6 submissions per IP per hour.
@@ -176,6 +185,9 @@ function aria_handle_inquiry() {
 	}
 	$clean = array_filter( $clean, 'strlen' );
 
+	// Content checks: spam is stored for review but not e-mailed, and the sender sees a normal reply.
+	$spam = aria_spam_reason( $clean );
+
 	$titles = array( 'quote' => 'Quote request', 'sample' => 'Sample request', 'contact' => 'Message', 'tracking' => 'Order status' );
 	$who    = isset( $clean['Company'] ) ? $clean['Company'] : ( isset( $clean['Name'] ) ? $clean['Name'] : $email );
 	$title  = $titles[ $type ] . ': ' . $who . ( isset( $clean['Product'] ) ? ' — ' . $clean['Product'] : '' );
@@ -183,8 +195,11 @@ function aria_handle_inquiry() {
 	$lead_id = wp_insert_post( array(
 		'post_type'   => 'aria_lead',
 		'post_status' => 'private',
-		'post_title'  => $title,
+		'post_title'  => ( $spam ? '[Spam] ' : '' ) . $title,
 	) );
+	if ( $spam && $lead_id && ! is_wp_error( $lead_id ) ) {
+		update_post_meta( $lead_id, '_aria_spam', $spam );
+	}
 	if ( $lead_id && ! is_wp_error( $lead_id ) ) {
 		update_post_meta( $lead_id, '_aria_lead', $clean );
 		update_post_meta( $lead_id, '_aria_lead_type', $type );
@@ -199,7 +214,10 @@ function aria_handle_inquiry() {
 		$body .= $k . ': ' . $v . "\n";
 	}
 	$to = aria_opt( 'leads_email' ) ? aria_opt( 'leads_email' ) : get_option( 'admin_email' );
-	wp_mail( $to, '[Aria Foods] ' . $title, $body, array( 'Reply-To: ' . ( isset( $clean['Name'] ) ? $clean['Name'] : '' ) . ' <' . $email . '>' ) );
+	if ( ! $spam ) {
+		$body .= "\n" . admin_url( 'edit.php?post_type=aria_lead' );
+		wp_mail( $to, '[Aria Foods] ' . $title, $body, array( 'Reply-To: ' . ( isset( $clean['Name'] ) ? str_replace( array( '"', '<', '>' ), '', $clean['Name'] ) : '' ) . ' <' . $email . '>' ) );
+	}
 
 	set_transient( $key, $hit + 1, HOUR_IN_SECONDS );
 
@@ -265,3 +283,84 @@ add_action( 'save_post_aria_lead', function ( $post_id ) {
 		update_post_meta( $post_id, '_aria_lead_status', $st );
 	}
 } );
+
+/* ---------- Spam protection ---------- */
+
+/** Signed timestamp: "time.signature". Pages can be cached; the token stays valid for 3 days. */
+function aria_form_token() {
+	$t = (string) time();
+	return $t . '.' . substr( hash_hmac( 'sha256', $t, wp_salt( 'nonce' ) ), 0, 16 );
+}
+
+function aria_form_token_time( $token ) {
+	$p = explode( '.', (string) $token );
+	if ( 2 !== count( $p ) || ! ctype_digit( $p[0] ) ) {
+		return 0;
+	}
+	return hash_equals( substr( hash_hmac( 'sha256', $p[0], wp_salt( 'nonce' ) ), 0, 16 ), $p[1] ) ? (int) $p[0] : 0;
+}
+
+/** Value the page script writes once a person types, taps or clicks in the form (must match assets/js/main.js). */
+function aria_human_value( $token ) {
+	$p = explode( '.', (string) $token );
+	return isset( $p[1] ) ? strrev( $p[1] ) . 'h' : 'x';
+}
+
+function aria_turnstile_site() {
+	$s = (array) get_option( 'aria_mail', array() );
+	return isset( $s['ts_site'] ) ? (string) $s['ts_site'] : '';
+}
+
+function aria_turnstile_secret() {
+	if ( defined( 'ARIA_TURNSTILE_SECRET' ) && ARIA_TURNSTILE_SECRET ) {
+		return ARIA_TURNSTILE_SECRET;
+	}
+	$s = (array) get_option( 'aria_mail', array() );
+	return isset( $s['ts_secret'] ) ? (string) $s['ts_secret'] : '';
+}
+
+function aria_turnstile_keys() {
+	return aria_turnstile_site() && aria_turnstile_secret();
+}
+
+function aria_turnstile_ok( $token ) {
+	if ( '' === $token ) {
+		return false;
+	}
+	$res = wp_remote_post( 'https://challenges.cloudflare.com/turnstile/v0/siteverify', array(
+		'timeout' => 8,
+		'body'    => array(
+			'secret'   => aria_turnstile_secret(),
+			'response' => $token,
+			'remoteip' => function_exists( 'aria_client_ip' ) ? aria_client_ip() : '',
+		),
+	) );
+	if ( is_wp_error( $res ) ) {
+		return true; // Cloudflare unreachable: do not lose real inquiries; other checks still apply.
+	}
+	$j = json_decode( wp_remote_retrieve_body( $res ), true );
+	return ! empty( $j['success'] );
+}
+
+/** Why an inquiry looks like spam, or '' when it looks genuine. */
+function aria_spam_reason( $c ) {
+	$text  = implode( ' ', $c );
+	$name  = ( isset( $c['Name'] ) ? $c['Name'] : '' ) . ' ' . ( isset( $c['Company'] ) ? $c['Company'] : '' );
+	$msg   = isset( $c['Message'] ) ? $c['Message'] : '';
+	if ( preg_match( '~https?://|www\.|\.(com|ru|xyz|top|io|net)\b/~i', $name ) ) {
+		return 'link in name or company';
+	}
+	if ( preg_match_all( '~https?://|www\.~i', $msg ) > 1 ) {
+		return 'several links in message';
+	}
+	if ( preg_match( '~\[url|<a\s|href=~i', $text ) ) {
+		return 'html or bbcode links';
+	}
+	if ( preg_match( '~\b(seo|backlinks?|casino|betting|crypto|bitcoin|forex|viagra|cialis|porn|escort|payday|loan offer|guest post|rank(ing)? your (site|website)|web ?design services|digital marketing services|app development services|lead generation services|increase your (traffic|sales))\b~i', $text ) ) {
+		return 'spam keywords';
+	}
+	if ( isset( $c['Email'] ) && preg_match( '~@(mailinator|guerrillamail|10minutemail|tempmail|temp-mail|yopmail|sharklasers|trashmail|getnada|dispostable)\.~i', $c['Email'] ) ) {
+		return 'disposable email';
+	}
+	return '';
+}

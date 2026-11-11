@@ -18,6 +18,7 @@ require ARIA_DIR . '/inc/content-types.php';
 require ARIA_DIR . '/inc/customizer.php';
 require ARIA_DIR . '/inc/nav.php';
 require ARIA_DIR . '/inc/forms.php';
+require ARIA_DIR . '/inc/mail.php';
 require ARIA_DIR . '/inc/account.php';
 require ARIA_DIR . '/inc/seo.php';
 require ARIA_DIR . '/inc/security.php';

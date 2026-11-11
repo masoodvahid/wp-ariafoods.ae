@@ -181,8 +181,30 @@
 	/* ---------- AJAX forms ---------- */
 	function initForms(scope) {
 		$$('form[data-ajax-form]', scope).forEach(function (form) {
+			// Spam protection: mark the form once a person interacts with it; load Turnstile on demand.
+			var armed = false;
+			var arm = function () {
+				if (armed) return; armed = true;
+				var ts = form.querySelector('input[name=ts]'), hu = form.querySelector('input[name=human]');
+				if (ts && hu) hu.value = (ts.value.split('.')[1] || '').split('').reverse().join('') + 'h';
+				var box = form.querySelector('[data-turnstile]');
+				if (box) turnstileRender(box);
+			};
+			['pointerdown', 'keydown', 'focusin', 'touchstart'].forEach(function (ev) { form.addEventListener(ev, arm, { passive: true }); });
 			form.addEventListener('submit', function (e) {
 				e.preventDefault();
+				arm();
+				var tbox = form.querySelector('[data-turnstile]');
+				var tok = form.querySelector('[name="cf-turnstile-response"]');
+				if (tbox && (!tok || !tok.value)) {
+					var st = form.querySelector('.form-status');
+					st.hidden = false; st.classList.remove('is-error'); st.textContent = 'Checking the security step…';
+					var tries = 0, wait = setInterval(function () {
+						var t2 = form.querySelector('[name="cf-turnstile-response"]');
+						if ((t2 && t2.value) || ++tries > 40) { clearInterval(wait); if (t2 && t2.value) { form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true })); } else { st.classList.add('is-error'); st.textContent = 'Please complete the security check, then send again.'; } }
+					}, 400);
+					return;
+				}
 				var status = form.querySelector('.form-status');
 				var btn = form.querySelector('[type=submit]');
 				var bad = null;
@@ -206,7 +228,8 @@
 						status.hidden = false;
 						status.classList.toggle('is-error', !j.success);
 						status.textContent = (j.data && j.data.message) || (j.success ? 'Sent.' : 'Something went wrong.');
-						if (j.success) { form.classList.add('is-sent'); form.reset(); }
+						if (j.success) { form.classList.add('is-sent'); var keep = form.querySelector('input[name=human]').value; form.reset(); form.querySelector('input[name=human]').value = keep; }
+						if (window.turnstile && form.querySelector('[data-turnstile] iframe')) { try { window.turnstile.reset(form.querySelector('[data-turnstile]')); } catch (x) {} }
 					})
 					.catch(function () {
 						status.hidden = false; status.classList.add('is-error');
@@ -218,6 +241,25 @@
 				f.addEventListener('input', function () { if (f.getAttribute('aria-invalid') === 'true' && f.value.trim()) f.setAttribute('aria-invalid', 'false'); });
 			});
 		});
+	}
+
+	/* ---------- Cloudflare Turnstile (only when keys are set; loaded on first use) ---------- */
+	var tsQueue = [], tsLoading = false;
+	function turnstileRender(box) {
+		if (box.dataset.done) return;
+		box.dataset.done = '1';
+		var go = function () {
+			window.turnstile.render(box, { sitekey: box.getAttribute('data-turnstile'), theme: 'auto', size: 'flexible', appearance: 'interaction-only' });
+		};
+		if (window.turnstile) { go(); return; }
+		tsQueue.push(go);
+		if (tsLoading) return;
+		tsLoading = true;
+		window.ariaTsReady = function () { tsQueue.forEach(function (f) { f(); }); tsQueue = []; };
+		var sc = document.createElement('script');
+		sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=ariaTsReady';
+		sc.async = true; sc.defer = true;
+		document.head.appendChild(sc);
 	}
 
 	/* ---------- Load more (articles) ---------- */
