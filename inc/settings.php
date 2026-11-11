@@ -209,22 +209,105 @@ function aria_settings_page() {
 		'mail_ok'    => array( 'success', __( 'The server accepted the test email. Check the inbox (and spam folder) of each recipient.', 'aria' ) ),
 		'mail_fail'  => array( 'error', __( 'The test email could not be sent:', 'aria' ) . ' ' . ( get_option( 'aria_mail_error' ) ? get_option( 'aria_mail_error' )['message'] : '' ) ),
 	);
+	$icons = array(
+		'notify' => array( 'bell', __( 'Who gets each inquiry: email and Telegram', 'aria' ) ),
+		'email'  => array( 'email-alt', __( 'SMTP mailbox and sender', 'aria' ) ),
+		'test'   => array( 'yes-alt', __( 'Send a test and check DNS', 'aria' ) ),
+		'tpl'    => array( 'editor-code', __( 'HTML and CSS of the emails', 'aria' ) ),
+		'spam'   => array( 'shield', __( 'Bot filters and Turnstile', 'aria' ) ),
+		'fonts'  => array( 'editor-textcolor', __( 'Heading and body fonts', 'aria' ) ),
+	);
+	$tg     = aria_tg_settings();
+	$ms     = aria_mail_settings();
+	$status = array(
+		array( __( 'Email', 'aria' ), $ms['smtp'] && $ms['user'] && $ms['pass'] ? 'SMTP' : 'PHP mail', $ms['smtp'] && $ms['user'] && $ms['pass'] ? 'ok' : 'warn' ),
+		array( 'Telegram', $tg['hooked'] ? sprintf( _n( '%d member', '%d members', count( (array) $tg['staff'] ), 'aria' ), count( (array) $tg['staff'] ) ) : __( 'off', 'aria' ), $tg['hooked'] ? 'ok' : 'off' ),
+		array( 'Turnstile', aria_turnstile_keys() ? __( 'on', 'aria' ) : __( 'off', 'aria' ), aria_turnstile_keys() ? 'ok' : 'off' ),
+	);
 	?>
 	<div class="wrap aria-set">
-		<h1><?php esc_html_e( 'Aria settings', 'aria' ); ?></h1>
+		<header class="as-head">
+			<img src="<?php echo esc_url( aria_logo_url() ); ?>" alt="" width="46" height="40">
+			<div>
+				<h1><?php esc_html_e( 'Aria settings', 'aria' ); ?></h1>
+				<p><?php echo esc_html( sprintf( __( 'Theme %s · forms, notifications, email and fonts', 'aria' ), ARIA_VER ) ); ?></p>
+			</div>
+			<ul class="as-status">
+				<?php foreach ( $status as $st ) : ?>
+					<li class="is-<?php echo esc_attr( $st[2] ); ?>"><span><?php echo esc_html( $st[0] ); ?></span><strong><?php echo esc_html( $st[1] ); ?></strong></li>
+				<?php endforeach; ?>
+			</ul>
+		</header>
+		<hr class="wp-header-end">
 		<?php if ( isset( $msgs[ $msg ] ) ) : ?>
 			<div class="notice notice-<?php echo esc_attr( $msgs[ $msg ][0] ); ?> is-dismissible"><p><?php echo esc_html( $msgs[ $msg ][1] ); ?></p></div>
 		<?php endif; ?>
-		<nav class="nav-tab-wrapper">
-			<?php foreach ( $tabs as $k => $l ) : ?>
-				<a class="nav-tab<?php echo $k === $tab ? ' nav-tab-active' : ''; ?>" href="<?php echo esc_url( aria_settings_url( $k ) ); ?>"><?php echo esc_html( $l ); ?></a>
-			<?php endforeach; ?>
-		</nav>
-		<style>.aria-set .card{max-width:860px;padding:8px 22px 18px}.aria-set .card h2{margin-top:14px}.aria-set code.big{font-size:13px;padding:6px 10px;display:inline-block}.aria-set .staff td,.aria-set .staff th{vertical-align:middle}.aria-set .ok{color:#1f8a5b;font-weight:600}.aria-set .bad{color:#b32d2e;font-weight:600}</style>
-		<?php call_user_func( 'aria_settings_tab_' . $tab ); ?>
+		<div class="as-layout">
+			<nav class="as-nav" aria-label="<?php esc_attr_e( 'Settings sections', 'aria' ); ?>">
+				<?php foreach ( $tabs as $k => $l ) : ?>
+					<a class="<?php echo $k === $tab ? 'is-active' : ''; ?>" href="<?php echo esc_url( aria_settings_url( $k ) ); ?>"<?php echo $k === $tab ? ' aria-current="page"' : ''; ?>>
+						<span class="dashicons dashicons-<?php echo esc_attr( $icons[ $k ][0] ); ?>"></span>
+						<span><strong><?php echo esc_html( $l ); ?></strong><small><?php echo esc_html( $icons[ $k ][1] ); ?></small></span>
+					</a>
+				<?php endforeach; ?>
+			</nav>
+			<main class="as-main as-tab-<?php echo esc_attr( $tab ); ?>">
+				<?php call_user_func( 'aria_settings_tab_' . $tab ); ?>
+			</main>
+		</div>
 	</div>
 	<?php
 }
+
+add_action( 'admin_head', function () {
+	$sc = get_current_screen();
+	if ( ! $sc || 'toplevel_page_aria-settings' !== $sc->id ) {
+		return;
+	}
+	?>
+	<style>
+	.aria-set{--b:#b0592a;--bd:#8e4520;--ink:#1c1512;--tint:#f7f2ec;--line:#e7ded4;--muted:#6f6259;max-width:1320px}
+	.aria-set .as-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--ink);color:#f7f2ec;border-radius:14px;padding:18px 22px;margin:14px 0 18px;box-shadow:0 10px 30px -18px rgba(28,21,18,.7)}
+	.aria-set .as-head img{width:46px;height:auto}
+	.aria-set .as-head h1{color:#fff;margin:0;padding:0;font-size:22px;line-height:1.2}
+	.aria-set .as-head p{margin:2px 0 0;color:#cdbfb2;font-size:13px}
+	.aria-set .as-status{display:flex;gap:8px;margin:0 0 0 auto;flex-wrap:wrap}
+	.aria-set .as-status li{margin:0;display:flex;flex-direction:column;padding:6px 12px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);min-width:92px}
+	.aria-set .as-status span{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#bba99a}
+	.aria-set .as-status strong{font-size:13px;color:#fff}
+	.aria-set .as-status li.is-ok strong::before{content:"● ";color:#3ccf8e}.aria-set .as-status li.is-warn strong::before{content:"● ";color:#f0b44c}.aria-set .as-status li.is-off strong::before{content:"● ";color:#8b7d72}
+	.aria-set .as-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;align-items:start}
+	.aria-set .as-nav{position:sticky;top:46px;display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px}
+	.aria-set .as-nav a{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink);transition:background .15s}
+	.aria-set .as-nav a:hover{background:var(--tint)}
+	.aria-set .as-nav a.is-active{background:var(--tint);box-shadow:inset 3px 0 0 var(--b)}
+	.aria-set .as-nav .dashicons{color:var(--b);margin-top:2px}
+	.aria-set .as-nav strong{display:block;font-size:14px;font-weight:600}
+	.aria-set .as-nav small{display:block;color:var(--muted);font-size:12px;line-height:1.35;margin-top:1px}
+	.aria-set .card{max-width:none;margin:0 0 18px;padding:6px 24px 20px;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(28,21,18,.04)}
+	.aria-set .card h2{font-size:16px;margin:16px 0 6px;color:var(--ink)}
+	.aria-set .card>.description:first-of-type,.aria-set .card h2+p.description{margin-top:0;color:var(--muted)}
+	.aria-set .form-table th{font-weight:600;color:var(--ink);padding-left:0}
+	.aria-set input[type=text],.aria-set input[type=email],.aria-set input[type=password],.aria-set input:not([type]),.aria-set select,.aria-set textarea{border-radius:8px;border-color:#d7ccc1}
+	.aria-set input:focus,.aria-set select:focus,.aria-set textarea:focus{border-color:var(--b);box-shadow:0 0 0 1px var(--b)}
+	.aria-set .button-primary{background:var(--b);border-color:var(--b);border-radius:8px;padding:2px 16px}
+	.aria-set .button-primary:hover,.aria-set .button-primary:focus{background:var(--bd);border-color:var(--bd)}
+	.aria-set .button:not(.button-primary){border-radius:8px;color:var(--bd);border-color:#d7ccc1}
+	.aria-set .button-link-delete{color:#b32d2e}
+	.aria-set p.submit{margin:0 0 18px;padding:0}
+	.aria-set .widefat{border-radius:10px;overflow:hidden;border-color:var(--line)}
+	.aria-set .widefat th{font-weight:600}
+	.aria-set code.big{font-size:13px;padding:7px 12px;display:inline-block;border-radius:8px;background:var(--tint)}
+	.aria-set .ok{color:#1f8a5b;font-weight:600}.aria-set .bad{color:#b32d2e;font-weight:600}
+	.aria-set .staff td,.aria-set .staff th{vertical-align:middle}
+	.aria-set .CodeMirror{border:1px solid #d7ccc1;border-radius:8px;height:460px;font-size:12.5px}
+	.aria-set details summary{cursor:pointer;font-weight:600;margin:6px 0}
+	@media (max-width:960px){.aria-set .as-layout{grid-template-columns:1fr}.aria-set .as-nav{position:static;flex-direction:row;overflow-x:auto}.aria-set .as-nav small{display:none}.aria-set .as-nav a{white-space:nowrap}.aria-set .as-status{margin-left:0}}
+	.aria-set .as-tab-tpl .card div[style*="grid-template-columns"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+	@media (max-width:1200px){.aria-set .as-tab-tpl .card div[style*="grid-template-columns"]{grid-template-columns:1fr!important}}
+	</style>
+	<?php
+} );
 
 function aria_settings_form_open( $tab ) {
 	echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
@@ -499,8 +582,8 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
 	if ( 'toplevel_page_aria-settings' !== $hook || ! isset( $_GET['tab'] ) || 'tpl' !== $_GET['tab'] ) { // phpcs:ignore
 		return;
 	}
-	$html = wp_enqueue_code_editor( array( 'type' => 'text/html', 'codemirror' => array( 'lint' => false, 'gutters' => array() ), 'htmlhint' => false ) );
-	$css  = wp_enqueue_code_editor( array( 'type' => 'text/css', 'codemirror' => array( 'lint' => false, 'gutters' => array() ), 'csslint' => false ) );
+	$html = wp_enqueue_code_editor( array( 'type' => 'text/html', 'codemirror' => array( 'lint' => false, 'gutters' => array() ) ) );
+	$css  = wp_enqueue_code_editor( array( 'type' => 'text/css', 'codemirror' => array( 'lint' => false, 'gutters' => array() ) ) );
 	if ( $html ) {
 		wp_add_inline_script( 'code-editor', 'jQuery(function(){var h=' . wp_json_encode( $html ) . ',c=' . wp_json_encode( $css ) . ';window.ariaEditors=[];document.querySelectorAll("textarea[data-code]").forEach(function(t){var ed=wp.codeEditor.initialize(t,t.dataset.code==="css"?c:h);window.ariaEditors.push(ed);ed.codemirror.on("change",function(){ed.codemirror.save();t.dispatchEvent(new Event("input"));});});});' );
 	}
@@ -511,7 +594,7 @@ function aria_settings_tab_tpl() {
 	aria_settings_form_open( 'tpl' );
 	$ph = '{{name}} {{company}} {{email}} {{whatsapp}} {{product}} {{quantity}} {{port}} {{message}} {{order}} {{type}} {{id}} {{date}} {{details}} {{site_name}} {{site_url}} {{logo_url}} {{admin_link}} {{whatsapp_link}} {{phone}} {{year}}';
 	?>
-	<div class="card" style="max-width:1100px">
+	<div class="card">
 		<p><?php esc_html_e( 'Edit the HTML and CSS of the emails sent for each inquiry. Placeholders are replaced with the inquiry data:', 'aria' ); ?></p>
 		<p><code style="white-space:normal;line-height:2"><?php echo esc_html( $ph ); ?></code></p>
 		<p class="description"><?php esc_html_e( '{{details}} inserts a table of all fields. The CSS is shared by both emails; email apps support simple CSS best (no flex/grid, web fonts are ignored).', 'aria' ); ?></p>
@@ -524,7 +607,7 @@ function aria_settings_tab_tpl() {
 	foreach ( $blocks as $k => $b ) :
 		$r = aria_mail_render( $k, 0, $t );
 		?>
-		<div class="card" style="max-width:1100px">
+		<div class="card">
 			<h2><?php echo esc_html( $b[0] ); ?></h2>
 			<p class="description"><?php echo esc_html( $b[1] ); ?></p>
 			<?php if ( 'customer' === $k ) : ?>
@@ -541,7 +624,7 @@ function aria_settings_tab_tpl() {
 			<p><label><input type="checkbox" name="s[reset_<?php echo esc_attr( $k ); ?>]" value="1"> <?php esc_html_e( 'Reset this email to the default design', 'aria' ); ?></label></p>
 		</div>
 	<?php endforeach; ?>
-	<div class="card" style="max-width:1100px">
+	<div class="card">
 		<h2>CSS</h2>
 		<textarea data-code="css" name="s[css]" rows="16" class="large-text code"><?php echo esc_textarea( $t['css'] ); ?></textarea>
 		<p><label><input type="checkbox" name="s[reset_css]" value="1"> <?php esc_html_e( 'Reset CSS to default', 'aria' ); ?></label></p>

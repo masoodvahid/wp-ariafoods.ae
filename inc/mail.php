@@ -76,8 +76,19 @@ add_action( 'phpmailer_init', function ( $mailer ) {
 		};
 	}
 	// Envelope sender = From address, so SPF/DKIM align with DMARC.
-	if ( is_email( $mailer->From ) ) {
-		$mailer->Sender = $mailer->From;
+	// Without SMTP, bounces go to a real inbox on the domain (first recipient), so delivery
+	// problems show up as bounce messages instead of disappearing.
+	$bounce = $mailer->From;
+	if ( 'smtp' !== $mailer->Mailer ) {
+		foreach ( aria_leads_recipients() as $r ) {
+			if ( '@' . aria_mail_domain() === substr( $r, -strlen( '@' . aria_mail_domain() ) ) ) {
+				$bounce = $r;
+				break;
+			}
+		}
+	}
+	if ( is_email( $bounce ) ) {
+		$mailer->Sender = $bounce;
 	}
 } );
 
