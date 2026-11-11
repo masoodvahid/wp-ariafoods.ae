@@ -19,6 +19,8 @@ require ARIA_DIR . '/inc/customizer.php';
 require ARIA_DIR . '/inc/nav.php';
 require ARIA_DIR . '/inc/forms.php';
 require ARIA_DIR . '/inc/mail.php';
+require ARIA_DIR . '/inc/leads.php';
+require ARIA_DIR . '/inc/telegram.php';
 require ARIA_DIR . '/inc/account.php';
 require ARIA_DIR . '/inc/seo.php';
 require ARIA_DIR . '/inc/security.php';
@@ -32,6 +34,7 @@ if ( is_admin() || wp_doing_cron() ) {
 }
 if ( is_admin() ) {
 	require ARIA_DIR . '/inc/admin.php';
+	require ARIA_DIR . '/inc/settings.php';
 	require ARIA_DIR . '/inc/importer.php';
 	require ARIA_DIR . '/inc/migrate.php';
 	require ARIA_DIR . '/inc/domain.php';

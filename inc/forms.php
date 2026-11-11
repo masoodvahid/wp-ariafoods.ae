@@ -207,13 +207,17 @@ function aria_handle_inquiry() {
 		if ( is_user_logged_in() ) {
 			update_post_meta( $lead_id, '_aria_user', get_current_user_id() );
 		}
+		update_post_meta( $lead_id, '_aria_lead_status', 'Received' );
+		if ( ! $spam ) {
+			do_action( 'aria_new_lead', $lead_id );
+		}
 	}
 
 	$body = '';
 	foreach ( $clean as $k => $v ) {
 		$body .= $k . ': ' . $v . "\n";
 	}
-	$to = aria_opt( 'leads_email' ) ? aria_opt( 'leads_email' ) : get_option( 'admin_email' );
+	$to = aria_leads_recipients();
 	if ( ! $spam ) {
 		$body .= "\n" . admin_url( 'edit.php?post_type=aria_lead' );
 		wp_mail( $to, '[Aria Foods] ' . $title, $body, array( 'Reply-To: ' . ( isset( $clean['Name'] ) ? str_replace( array( '"', '<', '>' ), '', $clean['Name'] ) : '' ) . ' <' . $email . '>' ) );
@@ -231,58 +235,6 @@ function aria_handle_inquiry() {
 	wp_safe_redirect( add_query_arg( 'sent', $type, $back ) . '#form-' . $type );
 	exit;
 }
-
-/* Admin: show the inquiry details on the edit screen and in the list. */
-add_action( 'add_meta_boxes_aria_lead', function () {
-	add_meta_box( 'aria_lead_box', __( 'Inquiry details', 'aria' ), function ( $post ) {
-		$data = get_post_meta( $post->ID, '_aria_lead', true );
-		if ( ! is_array( $data ) ) {
-			return;
-		}
-		echo '<table class="widefat striped"><tbody>';
-		foreach ( $data as $k => $v ) {
-			$val = 'Email' === $k ? '<a href="mailto:' . esc_attr( $v ) . '">' . esc_html( $v ) . '</a>' : ( 'WhatsApp' === $k ? '<a href="https://wa.me/' . esc_attr( aria_digits( $v ) ) . '" target="_blank">' . esc_html( $v ) . '</a>' : nl2br( esc_html( $v ) ) );
-			echo '<tr><th style="width:160px">' . esc_html( $k ) . '</th><td>' . $val . '</td></tr>'; // phpcs:ignore
-		}
-		echo '</tbody></table><p>' . esc_html( get_the_date( 'Y-m-d H:i', $post ) ) . '</p>';
-		$status = get_post_meta( $post->ID, '_aria_lead_status', true );
-		wp_nonce_field( 'aria_lead_status', 'aria_lead_nonce' );
-		echo '<p><label for="aria_lead_status"><strong>' . esc_html__( 'Status shown to the customer', 'aria' ) . '</strong></label><br><select id="aria_lead_status" name="aria_lead_status">';
-		foreach ( aria_lead_statuses() as $st ) {
-			echo '<option' . selected( $status, $st, false ) . '>' . esc_html( $st ) . '</option>';
-		}
-		echo '</select></p>';
-		$uid = (int) get_post_meta( $post->ID, '_aria_user', true );
-		if ( $uid ) {
-			echo '<p>' . esc_html__( 'Customer account:', 'aria' ) . ' <a href="' . esc_url( get_edit_user_link( $uid ) ) . '">' . esc_html( get_the_author_meta( 'display_name', $uid ) ) . '</a></p>';
-		}
-	}, 'aria_lead', 'normal', 'high' );
-} );
-add_filter( 'manage_aria_lead_posts_columns', function ( $cols ) {
-	return array( 'cb' => $cols['cb'], 'title' => __( 'Inquiry', 'aria' ), 'aria_email' => __( 'Email', 'aria' ), 'aria_qty' => __( 'Quantity', 'aria' ), 'date' => $cols['date'] );
-} );
-add_action( 'manage_aria_lead_posts_custom_column', function ( $col, $id ) {
-	$d = get_post_meta( $id, '_aria_lead', true );
-	if ( 'aria_email' === $col && ! empty( $d['Email'] ) ) {
-		echo '<a href="mailto:' . esc_attr( $d['Email'] ) . '">' . esc_html( $d['Email'] ) . '</a>';
-	}
-	if ( 'aria_qty' === $col && ! empty( $d['Quantity'] ) ) {
-		echo esc_html( $d['Quantity'] );
-	}
-}, 10, 2 );
-
-function aria_lead_statuses() {
-	return array( 'Received', 'Quoted', 'Sample sent', 'Order confirmed', 'In production', 'Shipped', 'Closed' );
-}
-add_action( 'save_post_aria_lead', function ( $post_id ) {
-	if ( ! isset( $_POST['aria_lead_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['aria_lead_nonce'] ) ), 'aria_lead_status' ) || ! current_user_can( 'edit_post', $post_id ) ) {
-		return;
-	}
-	$st = sanitize_text_field( wp_unslash( $_POST['aria_lead_status'] ?? '' ) );
-	if ( in_array( $st, aria_lead_statuses(), true ) ) {
-		update_post_meta( $post_id, '_aria_lead_status', $st );
-	}
-} );
 
 /* ---------- Spam protection ---------- */
 
